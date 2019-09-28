@@ -12,7 +12,6 @@ public class ClientHandler extends Thread {
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
     private boolean is_active;
-    private boolean is_logged;
     private ChatRoom chatRoom;//текущий чат
     private List<User> userList;
     private User user;
@@ -24,7 +23,6 @@ public class ClientHandler extends Thread {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         is_active = true;
-        this.is_logged = false;
         this.user = null;
         start(); // вызываем run()
     }
@@ -32,15 +30,20 @@ public class ClientHandler extends Thread {
     @Override
     public void run(){
         String message;
+        boolean isLogged = false;
         try {
             while (true) {
-                login();
+                while (!isLogged){
+                    isLogged = login();
+                }
+                sendMessage("Добро пожаловать в " + chatRoom.getName());
                 message = in.readLine();
                 System.out.println("Сообщение в потоке " + currentThread().getName());
                 if(message.equals("stop")) {
                     sendMessage(disconnectClient);
                     System.out.println("Клиент отключился");
                     is_active = false;
+                    user.setLogged(false);
                     break;
                 }
                 else
@@ -79,21 +82,42 @@ public class ClientHandler extends Thread {
         String message, login = "", password = "";
         boolean login_accepted = false;
         boolean password_accepted = false;
+        boolean user_found;
+        System.out.println(userList);
         while (true){
-            sendMessage("Вы зарегистрированы?");
+            user_found = false;
+            sendMessage("Вы зарегистрированы? да/нет");
             message = in.readLine();
             switch (message) {
                 case "да":
-                    sendMessage("Введите логин");
+                    sendMessage("Введите логин или введите exit");
                     message = in.readLine();
+                    if(message.equals("exit")){
+                        break;
+                    }
+                    //Ищем пользователя с введенным логином
                     for (User user : userList)
-                        if (user.getLogin().equals(message))
+                        if (user.getLogin().equals(message)){
+                            user_found = true;
+                            System.out.println("Пользователь найден: " + user.getLogin());
                             this.user = user;
+                        }
+                    //Если нет - начинаем вхождение сначала
+                    if(!user_found){
+                        System.out.println("Пользователя с таким логином не найдено.");
+                        break;
+                    }
+                    //проверяем пароль
                     synchronized (user) {
-                        sendMessage("Введите пароль");
+                        sendMessage("Введите пароль или введите exit");
                         message = in.readLine();
+                        if(message.equals("exit")){
+                            this.user = null;
+                            break;
+                        }
                         if (user.getPassword().equals(message)) {
                             sendMessage("Здравствуйте, " + user.getNickname());
+                            user.setLogged(true);
                             return true;
                         } else
                             sendMessage("Неверный логин или пароль");
@@ -104,16 +128,21 @@ public class ClientHandler extends Thread {
                         sendMessage("Введите логин или отправьте exit");
                         message = in.readLine();
                         if (message.equals("exit")) {
-                            break;
+                            return false;
                         }
                         if (!message.isEmpty()) {
+                            //Ищем пользователей с полученным логином
+                            System.out.println("Поиск по пользователям");
                             for (User user : userList)
-                                if (user.getLogin().equals(message))
+                                if (user.getLogin().equals(message)) {
                                     sendMessage("Логин занят");
-                                else {
-                                    login = message;
-                                    login_accepted = true;
+                                    user_found = true;
                                 }
+                            //Записываем новый логин если не нашли пользователя с таким логином
+                            if(!user_found){
+                                login = message;
+                                login_accepted = true;
+                            }
                         } else
                             sendMessage("Логин не может быть пустым");
                     }
@@ -130,7 +159,12 @@ public class ClientHandler extends Thread {
                         } else
                             sendMessage("Пароль не может быть пустым");
                     }
-                    userList.add(new User(userList.size() - 1, login, password));
+                    //Добавляем запись о новом пользователе
+                    this.user = new User(userList.size() - 1, login, password);
+                    if(user.getId()<0){
+                        user.setId(0);
+                    }
+                    userList.add(user);
                     sendMessage("Вы успешно зарегистрированы \n"
                             + "Ваш логин: " + login + "\n"
                             + "Ваш пароль: " + password);

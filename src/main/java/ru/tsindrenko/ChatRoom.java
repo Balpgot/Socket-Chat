@@ -4,11 +4,13 @@ import java.util.List;
 
 public class ChatRoom {
     private int id;
+    private String name;
     private List<ClientHandler> participants;
 
-    ChatRoom(int id, List<ClientHandler> clientHandlerList){
+    ChatRoom(int id, String name, List<ClientHandler> clientHandlerList){
         this.participants = clientHandlerList;
         this.id = id;
+        this.name = name;
     }
 
     public void addParticipant(ClientHandler participant){
@@ -35,5 +37,13 @@ public class ChatRoom {
 
     public void setParticipants(List<ClientHandler> participants) {
         this.participants = participants;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -75,4 +75,20 @@ public class User {
     public void setMuted(boolean muted) {
         isMuted = muted;
     }
+
+    public boolean isLogged() {
+        return isLogged;
+    }
+
+    public void setLogged(boolean logged) {
+        isLogged = logged;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                '}';
+    }
 }

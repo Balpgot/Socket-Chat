@@ -14,7 +14,7 @@ public class Main {
     private static List<User> userList = new LinkedList<>();
 
     public static void main(String [] args) throws IOException{
-        chatRooms.add(new ChatRoom(0,clientHandlerList));
+        chatRooms.add(new ChatRoom(0,"Общий чат",clientHandlerList));
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
         ClientListManager clientListManager = new ClientListManager(clientHandlerList);
     }
