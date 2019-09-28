@@ -11,18 +11,18 @@ public class ClientHandler extends Thread {
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
-    private boolean is_active;
+    private boolean is_active; //активен ли клиент
     private ChatRoom chatRoom;//текущий чат
-    private List<User> userList;
-    private User user;
+    private List<User> userList; // список всех пользователей
+    private User user; //пользователь, закрепленный за данным клиентом
 
 
     public ClientHandler(Socket socket, List<User> userList) throws IOException{
         this.clientSocket = socket;
         this.userList = userList;
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        is_active = true;
+        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        this.is_active = true;
         this.user = null;
         start(); // вызываем run()
     }

@@ -12,8 +12,15 @@ public class User {
     private boolean isMuted;
     private boolean isLogged;
 
-    public User(int id, String login, String password) {
+    User(){
+        this.nickname = "Anonimus";
+        this.login = "login";
+        this.password = "password";
+    }
+
+    User(int id, String login, String password) {
         this.id = id;
+        this.nickname = "Аноним";
         this.login = login;
         this.password = password;
         this.isMuted = false;
