@@ -11,6 +11,7 @@ public class User {
     private LocalDateTime muteTime;
     private boolean isMuted;
     private boolean isLogged;
+    private ClientHandler clientHandler;
 
     User(){
         this.nickname = "Anonimus";
@@ -26,6 +27,8 @@ public class User {
         this.isMuted = false;
         this.isLogged = false;
     }
+
+    //геттеры и сеттеры
 
     public int getId() {
         return id;
@@ -89,6 +92,14 @@ public class User {
 
     public void setLogged(boolean logged) {
         isLogged = logged;
+    }
+
+    public ClientHandler getClientHandler() {
+        return clientHandler;
+    }
+
+    public void setClientHandler(ClientHandler clientHandler) {
+        this.clientHandler = clientHandler;
     }
 
     @Override

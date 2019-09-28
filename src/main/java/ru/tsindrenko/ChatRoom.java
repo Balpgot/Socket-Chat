@@ -8,16 +8,14 @@ public class ChatRoom {
     private String name;
     private List<ClientHandler> participants;
     private List<User> blacklist;
+    private List<Mute> mutelist;
 
     ChatRoom(int id, String name, List<ClientHandler> clientHandlerList){
         this.participants = clientHandlerList;
         this.id = id;
         this.name = name;
         this.blacklist = new ArrayList<>();
-    }
-
-    public void addParticipant(ClientHandler participant){
-        participants.add(participant);
+        this.mutelist = new ArrayList<>();
     }
 
     public List<ClientHandler> getParticipants() {
@@ -27,6 +25,12 @@ public class ChatRoom {
     public void sendMessageToAll(String message){
         for (ClientHandler client:participants) {
             client.sendMessage("Чат " + id + " " + message);
+        }
+    }
+
+    public void addParticipant(ClientHandler handler){
+        if(!blacklist.contains(handler.getUser())){
+            participants.add(handler);
         }
     }
 
@@ -58,5 +62,13 @@ public class ChatRoom {
 
     public void setBlacklist(List<User> blacklist) {
         this.blacklist = blacklist;
+    }
+
+    public List<Mute> getMutelist() {
+        return mutelist;
+    }
+
+    public void setMutelist(List<Mute> mutelist) {
+        this.mutelist = mutelist;
     }
 }

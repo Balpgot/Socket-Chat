@@ -24,6 +24,7 @@ public class ClientHandler extends Thread {
         this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         this.is_active = true;
         this.user = null;
+        Main.clientHandlerList.add(this);
         start(); // вызываем run()
     }
 
@@ -36,22 +37,22 @@ public class ClientHandler extends Thread {
                 while (!isLogged){
                     isLogged = login();
                 }
+                user.setClientHandler(this);
                 sendMessage("Добро пожаловать в " + chatRoom.getName());
                 message = in.readLine();
+                for (String word:Main.swearWords) {
+                    if(message.contains(word)){
+                        message = message.replaceAll(word,"***");
+                    }
+                }
                 System.out.println("Сообщение в потоке " + currentThread().getName());
                 if(message.equals("stop")) {
-                    sendMessage(disconnectClient);
-                    System.out.println("Клиент отключился");
-                    is_active = false;
-                    user.setLogged(false);
-                    break;
+                    endSession();
                 }
                 else
                     chatRoom.sendMessageToAll(message);
                     //sendMessage(message);
             }
-            in.close();
-            out.close();
         }
         catch (IOException ex) {
             System.out.println(ex.getMessage());
@@ -171,7 +172,23 @@ public class ClientHandler extends Thread {
                     return true;
             }
         }
+    }
 
+    public void endSession(){
+        if(clientSocket.isConnected()){
+            sendMessage(disconnectClient);
+        }
+        System.out.println("Клиент отключился");
+        is_active = false;
+        user.setLogged(false);
+        user.setClientHandler(null);
+        try {
+            in.close();
+            out.close();
+        }
+        catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
     // геттеры и сеттеры
@@ -198,5 +215,17 @@ public class ClientHandler extends Thread {
 
     public ChatRoom getChatRoom() {
         return chatRoom;
+    }
+
+    public void setIs_active(boolean is_active) {
+        this.is_active = is_active;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

@@ -1,6 +1,5 @@
 package ru.tsindrenko;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class ClientListManager extends Thread {
@@ -11,7 +10,6 @@ public class ClientListManager extends Thread {
     ClientListManager(List<ClientHandler> usersList, List<User> users){
         this.usersList = usersList;
         this.users = users;
-
     }
 
     ClientListManager(List<ClientHandler> usersList){
@@ -29,11 +27,12 @@ public class ClientListManager extends Thread {
         }
     }
 
-    private synchronized void unmuteUsers(){
-        for (User user:users)
-            if(user.isMuted())
-                if(user.getMuteTime().isBefore(LocalDateTime.now()))
-                    user.setMuted(false);
+    private synchronized void removeBrokenConnections(){
+        for (ClientHandler handler:usersList) {
+            if(!handler.getClientSocket().isConnected()){
+                handler.endSession();
+            }
+        }
     }
 
     @Override
@@ -41,7 +40,7 @@ public class ClientListManager extends Thread {
         while (true){
             synchronized (currentThread()) {
                 removeInactiveUsers();
-                //unmuteUsers();
+                removeBrokenConnections();
                 System.out.println("Мой поток " + currentThread().getName());
                 System.out.println("Активных юзеров " + usersList.size());
                 try {

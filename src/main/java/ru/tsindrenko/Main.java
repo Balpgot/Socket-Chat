@@ -2,17 +2,21 @@ package ru.tsindrenko;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Main {
 
-    private final static int port = 8080;
-    private static List<ClientHandler> clientHandlerList = new LinkedList<>();
-    private static List<ChatRoom> chatRooms = new LinkedList<>();
-    private static List<User> userList = new LinkedList<>();
+    final static int port = 8080;
+    static List<ClientHandler> clientHandlerList = new LinkedList<>();
+    static List<ChatRoom> chatRooms = new LinkedList<>();
+    static List<User> userList = new LinkedList<>();
+    static List<String> swearWords = new ArrayList<>();
 
     public static void main(String [] args) throws IOException{
+        swearWords.add("сука");
+        swearWords.add("блять");
         chatRooms.add(new ChatRoom(0,"Общий чат",clientHandlerList));
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
         ClientListManager clientListManager = new ClientListManager(clientHandlerList);
