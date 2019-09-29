@@ -29,7 +29,7 @@ public class ClientListManager extends Thread {
 
     private synchronized void removeBrokenConnections(){
         for (ClientHandler handler:usersList) {
-            if(!handler.getClientSocket().isConnected()){
+            if(handler.getClientSocket().isClosed()){
                 handler.endSession();
             }
         }

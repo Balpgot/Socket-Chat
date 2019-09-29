@@ -9,6 +9,7 @@ import java.util.List;
 public class Main {
 
     final static int port = 8080;
+    final static String file_directory = "D://JavaProjects//Chat//src//main//resources//files//";
     static List<ClientHandler> clientHandlerList = new LinkedList<>();
     static List<ChatRoom> chatRooms = new LinkedList<>();
     static List<User> userList = new LinkedList<>();
@@ -19,7 +20,7 @@ public class Main {
         swearWords.add("блять");
         chatRooms.add(new ChatRoom(0,"Общий чат",clientHandlerList));
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
-        ClientListManager clientListManager = new ClientListManager(clientHandlerList);
+        //ClientListManager clientListManager = new ClientListManager(clientHandlerList);
     }
 
 }
