@@ -16,11 +16,8 @@ public class Main {
     static List<String> swearWords = new ArrayList<>();
 
     public static void main(String [] args) throws IOException{
-        swearWords.add("сука");
-        swearWords.add("блять");
         chatRooms.add(new ChatRoom(0,"Общий чат",clientHandlerList));
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
-        //ClientListManager clientListManager = new ClientListManager(clientHandlerList);
     }
 
 }

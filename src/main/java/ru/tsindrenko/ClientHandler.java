@@ -10,6 +10,7 @@ public class ClientHandler extends Thread {
     private final String disconnectClient = "BREAK_CONNECTION";
     private final String getFile = "FILE";
     private final String accepted = "SUCCESSFUL_OPERATION";
+    private final String loginInfo = "LOGIN_INFO";
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
@@ -29,6 +30,10 @@ public class ClientHandler extends Thread {
         start(); // вызываем run()
     }
 
+    /* TODO
+        переписать метод
+     */
+
     @Override
     public void run(){
         String message;
@@ -36,11 +41,12 @@ public class ClientHandler extends Thread {
         try {
             while (true) {
                 //логинимся в чат
-                while (!isLogged){
+                /*while (!isLogged){
                     isLogged = login();
-                }
+                }*/
                 //начинаем прослушивать сообщения
                 message = in.readLine();
+                messageHandler(message);
                 System.out.println("Сообщение: " + message);
                 if(message.equals("CHATROOMS")){
                     StringBuilder sb = new StringBuilder("CHATROOMS:[");
@@ -128,6 +134,22 @@ public class ClientHandler extends Thread {
     }
 
     //СООБЩЕНИЯ
+
+    /* TODO
+        Доделать метод и константы
+     */
+    private void messageHandler(String message){
+        String header = message.substring(0,message.indexOf("["));
+        String body = message.substring(message.indexOf("["));
+        switch (header){
+            case loginInfo:
+            case fileInfo:
+            case messageInfo:
+            case patchInfo:
+            case requestInfo:
+        }
+    }
+
     public void sendMessage(String message){
         try {
             out.write(message+"\n");
@@ -157,21 +179,21 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /*TODO
+     * Переписать метод
+     */
     //метод входа/регистрации в чате
-    private boolean login() throws IOException{
-        String message, login = "", password = "";
+    /*private boolean login(String login_message){
+        String message,login,password;
         boolean login_accepted = false;
         boolean password_accepted = false;
         boolean user_found;
         System.out.println(userList);
         while (true){
             user_found = false;
-            sendMessage("Вы зарегистрированы? да/нет");
-            message = in.readLine();
             switch (message) {
                 case "да":
                     sendMessage("Введите логин или введите exit");
-                    message = in.readLine();
                     if(message.equals("exit")){
                         break;
                     }
@@ -190,7 +212,6 @@ public class ClientHandler extends Thread {
                     //проверяем пароль
                     synchronized (user) {
                         sendMessage("Введите пароль или введите exit");
-                        message = in.readLine();
                         if(message.equals("exit")){
                             this.user = null;
                             break;
@@ -206,7 +227,6 @@ public class ClientHandler extends Thread {
                 case "нет":
                     while (!login_accepted) {
                         sendMessage("Введите логин или отправьте exit");
-                        message = in.readLine();
                         if (message.equals("exit")) {
                             return false;
                         }
@@ -229,7 +249,6 @@ public class ClientHandler extends Thread {
 
                     while (!password_accepted) {
                         sendMessage("Введите пароль или отправьте exit");
-                        message = in.readLine();
                         if (message.equals("exit")) {
                             break;
                         }
@@ -253,7 +272,7 @@ public class ClientHandler extends Thread {
                     return true;
             }
         }
-    }
+    }*/
 
     //завершает текущую сессию связи
     public synchronized void endSession(){
