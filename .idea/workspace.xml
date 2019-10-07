@@ -3,16 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="bbbe8ca7-0f79-4ed4-903e-dcfed116824e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/Admin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/Admin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientListManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientListManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/tsindrenko/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ChatRoom.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ChatRoom.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ClientHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ClientHandler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ClientListManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/tsindrenko/ClientListManager.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/tsindrenko/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/tsindrenko/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/tsindrenko/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/tsindrenko/User.class" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -30,7 +21,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
+            <state relative-caret-position="221">
               <caret line="17" column="21" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="21" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -39,7 +30,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientListManager.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="445">
@@ -51,7 +42,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ChatRoom.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="423">
+            <state relative-caret-position="493">
               <caret line="41" selection-start-line="41" selection-end-line="41" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -95,7 +86,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/User.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="958">
+            <state relative-caret-position="1173">
               <caret line="114" column="36" selection-start-line="114" selection-start-column="36" selection-end-line="114" selection-end-column="36" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -116,38 +107,19 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="599">
-              <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
+            <state relative-caret-position="87">
+              <caret line="13" column="3" selection-start-line="13" selection-start-column="3" selection-end-line="13" selection-end-column="3" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#run#0;class#ClientHandler#0" />
                 <element signature="method#receiveFile#0;class#ClientHandler#0" />
                 <element signature="method#sendMessage#0;class#ClientHandler#0" />
                 <element signature="method#sendMessageToUser#0;class#ClientHandler#0" />
                 <element signature="method#sendMessage#1;class#ClientHandler#0" />
                 <element signature="method#login#0;class#ClientHandler#0" />
                 <element signature="method#endSession#0;class#ClientHandler#0" />
-                <element signature="e#10233#10234#0" expanded="true" />
-                <element signature="e#10273#10274#0" expanded="true" />
-                <element signature="e#10305#10306#0" expanded="true" />
-                <element signature="e#10337#10338#0" expanded="true" />
-                <element signature="e#10376#10377#0" expanded="true" />
-                <element signature="e#10411#10412#0" expanded="true" />
-                <element signature="e#10467#10468#0" expanded="true" />
-                <element signature="e#10515#10516#0" expanded="true" />
-                <element signature="e#10560#10561#0" expanded="true" />
-                <element signature="e#10599#10600#0" expanded="true" />
-                <element signature="e#10636#10637#0" expanded="true" />
-                <element signature="e#10667#10668#0" expanded="true" />
-                <element signature="e#10718#10719#0" expanded="true" />
-                <element signature="e#10760#10761#0" expanded="true" />
-                <element signature="e#10789#10790#0" expanded="true" />
-                <element signature="e#10816#10817#0" expanded="true" />
-                <element signature="e#10854#10855#0" expanded="true" />
-                <element signature="e#10886#10887#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -325,7 +297,8 @@
       <workItem from="1569327753940" duration="23157000" />
       <workItem from="1569524192079" duration="966000" />
       <workItem from="1569688139583" duration="15615000" />
-      <workItem from="1569764702141" duration="13482000" />
+      <workItem from="1569764702141" duration="13528000" />
+      <workItem from="1569948984207" duration="5296000" />
     </task>
     <task id="LOCAL-00001" summary="Доработал login().&#10;У ChatRoom теперь есть поле String name которое хранит название чата">
       <created>1569693153395</created>
@@ -348,17 +321,23 @@
       <option name="project" value="LOCAL" />
       <updated>1569704341690</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Разработан метод для получения файлов">
+      <created>1569785412625</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1569785412625</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="59501000" />
+    <option name="totallyTimeSpent" value="64843000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="960" height="1040" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23555556" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -367,7 +346,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.34471366" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.34471366" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -396,7 +375,8 @@
     <MESSAGE value="Доработал login().&#10;У ChatRoom теперь есть поле String name которое хранит название чата" />
     <MESSAGE value="Добавил классы Admin и Mute&#10;Admin - класс админстратора для ChatRoom&#10;Mute - класс, хранящий данный о мьюте пользователя" />
     <MESSAGE value="User: добавлено поле clientHandler&#10;Теперь User знает о своем ClientHandler" />
-    <option name="LAST_COMMIT_MESSAGE" value="User: добавлено поле clientHandler&#10;Теперь User знает о своем ClientHandler" />
+    <MESSAGE value="Разработан метод для получения файлов" />
+    <option name="LAST_COMMIT_MESSAGE" value="Разработан метод для получения файлов" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Client.java" />
@@ -417,53 +397,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Server.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ServiceMessages.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="32" column="57" selection-start-line="32" selection-start-column="57" selection-end-line="32" selection-end-column="57" />
+        <state relative-caret-position="221">
+          <caret line="17" column="21" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="21" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/UserRole.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="16" selection-start-line="5" selection-start-column="16" selection-end-line="5" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ServiceMessages.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" selection-start-line="3" selection-end-line="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/DatabaseConnector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="32" selection-start-line="2" selection-start-column="32" selection-end-line="2" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Mute.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="22" column="60" selection-start-line="22" selection-start-column="60" selection-end-line="22" selection-end-column="60" />
-          <folding>
-            <element signature="e#324#325#0" expanded="true" />
-            <element signature="e#399#400#0" expanded="true" />
-            <element signature="e#560#561#0" expanded="true" />
-            <element signature="e#629#630#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ChatRoom.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
+        <state relative-caret-position="493">
           <caret line="41" selection-start-line="41" selection-end-line="41" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -491,19 +438,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="21" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="21" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/User.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="958">
+        <state relative-caret-position="1173">
           <caret line="114" column="36" selection-start-line="114" selection-start-column="36" selection-end-line="114" selection-end-column="36" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -514,38 +451,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientHandler.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/UserRole.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="599">
-          <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#run#0;class#ClientHandler#0" />
-            <element signature="method#receiveFile#0;class#ClientHandler#0" />
-            <element signature="method#sendMessage#0;class#ClientHandler#0" />
-            <element signature="method#sendMessageToUser#0;class#ClientHandler#0" />
-            <element signature="method#sendMessage#1;class#ClientHandler#0" />
-            <element signature="method#login#0;class#ClientHandler#0" />
-            <element signature="method#endSession#0;class#ClientHandler#0" />
-            <element signature="e#10233#10234#0" expanded="true" />
-            <element signature="e#10273#10274#0" expanded="true" />
-            <element signature="e#10305#10306#0" expanded="true" />
-            <element signature="e#10337#10338#0" expanded="true" />
-            <element signature="e#10376#10377#0" expanded="true" />
-            <element signature="e#10411#10412#0" expanded="true" />
-            <element signature="e#10467#10468#0" expanded="true" />
-            <element signature="e#10515#10516#0" expanded="true" />
-            <element signature="e#10560#10561#0" expanded="true" />
-            <element signature="e#10599#10600#0" expanded="true" />
-            <element signature="e#10636#10637#0" expanded="true" />
-            <element signature="e#10667#10668#0" expanded="true" />
-            <element signature="e#10718#10719#0" expanded="true" />
-            <element signature="e#10760#10761#0" expanded="true" />
-            <element signature="e#10789#10790#0" expanded="true" />
-            <element signature="e#10816#10817#0" expanded="true" />
-            <element signature="e#10854#10855#0" expanded="true" />
-            <element signature="e#10886#10887#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="85">
+          <caret line="5" column="16" selection-start-line="5" selection-start-column="16" selection-end-line="5" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -561,10 +470,56 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Mute.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="22" column="60" selection-start-line="22" selection-start-column="60" selection-end-line="22" selection-end-column="60" />
+          <folding>
+            <element signature="e#324#325#0" expanded="true" />
+            <element signature="e#399#400#0" expanded="true" />
+            <element signature="e#560#561#0" expanded="true" />
+            <element signature="e#629#630#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/DatabaseConnector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="32" selection-start-line="2" selection-start-column="32" selection-end-line="2" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientListManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="445">
           <caret line="35" column="5" selection-start-line="35" selection-start-column="5" selection-end-line="35" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Server.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="493">
+          <caret line="32" column="57" selection-start-line="32" selection-start-column="57" selection-end-line="32" selection-end-column="57" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/ClientHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="87">
+          <caret line="13" column="3" selection-start-line="13" selection-start-column="3" selection-end-line="13" selection-end-column="3" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#receiveFile#0;class#ClientHandler#0" />
+            <element signature="method#sendMessage#0;class#ClientHandler#0" />
+            <element signature="method#sendMessageToUser#0;class#ClientHandler#0" />
+            <element signature="method#sendMessage#1;class#ClientHandler#0" />
+            <element signature="method#login#0;class#ClientHandler#0" />
+            <element signature="method#endSession#0;class#ClientHandler#0" />
+          </folding>
         </state>
       </provider>
     </entry>
