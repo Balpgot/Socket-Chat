@@ -42,6 +42,18 @@ public class ClientHandler extends Thread {
                 //начинаем прослушивать сообщения
                 message = in.readLine();
                 System.out.println("Сообщение: " + message);
+                if(message.equals("CHATROOMS")){
+                    StringBuilder sb = new StringBuilder("CHATROOMS:[");
+                    for (ChatRoom chatRoom:Main.chatRooms) {
+                        if(chatRoom.getParticipants().contains(this)){
+                            sb.append(chatRoom.getName());
+                            sb.append(",");
+                        }
+                    }
+                    sb.deleteCharAt(sb.lastIndexOf(","));
+                    sb.append("]");
+                    sendMessage(sb.toString());
+                }
                 //если отправлен файл
                 if(message.equals(getFile)){
                     System.out.println("Инициирована передача файла");
@@ -115,8 +127,7 @@ public class ClientHandler extends Thread {
         }
     }
 
-    //ПРОСТЫЕ СООБЩЕНИЯ
-
+    //СООБЩЕНИЯ
     public void sendMessage(String message){
         try {
             out.write(message+"\n");

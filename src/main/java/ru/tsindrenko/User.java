@@ -1,6 +1,7 @@
 package ru.tsindrenko;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 public class User {
@@ -13,6 +14,7 @@ public class User {
     private boolean isMuted;
     private boolean isLogged;
     private ClientHandler clientHandler;
+    private List<ChatRoom> chatRooms;
 
     User(){
         this.nickname = "Anonimus";
