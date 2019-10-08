@@ -369,7 +369,7 @@
       <workItem from="1570460974409" duration="597000" />
       <workItem from="1570462964339" duration="2751000" />
       <workItem from="1570562193177" duration="6387000" />
-      <workItem from="1570569272442" duration="8422000" />
+      <workItem from="1570569272442" duration="8523000" />
     </task>
     <task id="LOCAL-00001" summary="Доработал login().&#10;У ChatRoom теперь есть поле String name которое хранит название чата">
       <created>1569693153395</created>
@@ -399,11 +399,18 @@
       <option name="project" value="LOCAL" />
       <updated>1569785412625</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Добавлены методы для сериализации сообщений&#10;Сообщения формируются с помощью JSON&#10;Переписаны методы приема и передачи сообщений, авторизации">
+      <created>1570578574087</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1570578574087</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="92322000" />
+    <option name="totallyTimeSpent" value="92423000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -426,7 +433,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.33810574" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.33810574" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -506,7 +513,8 @@
     <MESSAGE value="Добавил классы Admin и Mute&#10;Admin - класс админстратора для ChatRoom&#10;Mute - класс, хранящий данный о мьюте пользователя" />
     <MESSAGE value="User: добавлено поле clientHandler&#10;Теперь User знает о своем ClientHandler" />
     <MESSAGE value="Разработан метод для получения файлов" />
-    <option name="LAST_COMMIT_MESSAGE" value="Разработан метод для получения файлов" />
+    <MESSAGE value="Добавлены методы для сериализации сообщений&#10;Сообщения формируются с помощью JSON&#10;Переписаны методы приема и передачи сообщений, авторизации" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавлены методы для сериализации сообщений&#10;Сообщения формируются с помощью JSON&#10;Переписаны методы приема и передачи сообщений, авторизации" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/tsindrenko/Client.java" />
