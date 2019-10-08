@@ -22,7 +22,7 @@ public class ChatRoom {
         return participants;
     }
 
-    public void sendMessageToAll(String message){
+    public void sendMessageToAll(TextMessage message){
         for (ClientHandler client:participants) {
             client.sendMessage("Чат " + id + " " + message);
         }

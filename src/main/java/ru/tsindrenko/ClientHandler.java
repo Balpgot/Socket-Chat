@@ -1,23 +1,39 @@
 package ru.tsindrenko;
 
 
+import com.google.gson.Gson;
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
+import java.util.Random;
 
 public class ClientHandler extends Thread {
 
     private final String disconnectClient = "BREAK_CONNECTION";
-    private final String getFile = "FILE";
     private final String accepted = "SUCCESSFUL_OPERATION";
-    private final String loginInfo = "LOGIN_INFO";
+    private final String loginInfo = "LOGIN";
+    private final String fileInfo = "FILE";
+    private final String serviceInfo = "SERVICE";
+    private final String messageInfo = "TEXT";
+    private final String patchInfo = "PATCH_INFO";
+    private final String requestInfo = "REQUEST_INFO";
+    private final String userNotFound = "USER_NOT_FOUND";
+    private final String wrongPassword = "WRONG_PASSWORD";
+    private final String loginIsOccupied = "LOGIN_IS_OCCUPIED";
+    private final String userIsLogged = "USER_IS_LOGGED";
+    private static final String avatar = "avatar";
+    private static final String fileType = "file";
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
     private boolean is_active; //активен ли клиент
     private ChatRoom chatRoom;//текущий чат
+    private int dialogUserId;//id пользователя - собеседника
     private List<User> userList; // список всех пользователей
     private User user; //пользователь, закрепленный за данным клиентом
+    private Gson gson;
 
 
     public ClientHandler(Socket socket, List<User> userList) throws IOException{
@@ -27,61 +43,19 @@ public class ClientHandler extends Thread {
         this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         this.is_active = true;
         this.user = null;
+        this.gson = new Gson();
         start(); // вызываем run()
     }
-
-    /* TODO
-        переписать метод
-     */
 
     @Override
     public void run(){
         String message;
-        boolean isLogged = false;
         try {
             while (true) {
-                //логинимся в чат
-                /*while (!isLogged){
-                    isLogged = login();
-                }*/
                 //начинаем прослушивать сообщения
                 message = in.readLine();
                 messageHandler(message);
                 System.out.println("Сообщение: " + message);
-                if(message.equals("CHATROOMS")){
-                    StringBuilder sb = new StringBuilder("CHATROOMS:[");
-                    for (ChatRoom chatRoom:Main.chatRooms) {
-                        if(chatRoom.getParticipants().contains(this)){
-                            sb.append(chatRoom.getName());
-                            sb.append(",");
-                        }
-                    }
-                    sb.deleteCharAt(sb.lastIndexOf(","));
-                    sb.append("]");
-                    sendMessage(sb.toString());
-                }
-                //если отправлен файл
-                if(message.equals(getFile)){
-                    System.out.println("Инициирована передача файла");
-                    message = in.readLine();
-                    receiveFile(message);
-                    System.out.println("Файл получен");
-                }
-                else {
-                    //чистим мат
-                    for (String word : Main.swearWords) {
-                        if (message.contains(word)) {
-                            message = message.replaceAll(word, "*** ");
-                        }
-                    }
-                    System.out.println("Сообщение в потоке " + currentThread().getName());
-                    //получаем сообщение об остановке клиента
-                    if (message.equals("stop")) {
-                        endSession();
-                    } else
-                        chatRoom.sendMessageToAll(message);
-                    //sendMessage(message);
-                }
             }
         }
         catch (IOException ex) {
@@ -94,21 +68,44 @@ public class ClientHandler extends Thread {
     //РАБОТА С ФАЙЛАМИ
 
     public void sendFile(File file){
-        /** TODO
-         * Разработать метод
-         */
+        try {
+            //определяем размер пакета и открываем файл на чтение
+            byte[] byteArray = new byte[8192];
+            FileInputStream fis = new FileInputStream(file.getPath());
+            //отправляем клиенту размер файла
+            long size = file.length();
+            FileMessage fileMessage = new FileMessage(size,fileType);
+            sendMessage(gson.toJson(fileMessage));
+            System.out.println("Начинаю оправлять");
+            BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
+            while (size>0){
+                int i = fis.read(byteArray);
+                bos.write(byteArray, 0, i);
+                size-= i;
+            }
+            bos.flush();
+            fis.close();
+        }
+        catch (IOException ex){
+            System.out.println("sendFile: " + ex.getMessage());
+        }
     }
 
-    public void receiveFile(String filename){
+    public void receiveFile(FileMessage fileMessage){
         try {
-            String message = in.readLine();
             //получаем размер файла
-            long size = Long.parseLong(message);
+            long size = fileMessage.getSize();
             System.out.println("Размер файла: " + size);
             //объявляем размер пакета
             byte [] bytes = new byte[8192];
             //устанавливаем файл на запись
-            File file = new File(Main.file_directory +"//"+ filename);
+            File file = new File(new StringBuffer().
+                            append(Main.file_directory).
+                            append(user.getId()).
+                            append("//").
+                            append(fileMessage.getFileType()).
+                            append("//").
+                            append("1.txt").toString());
             file.createNewFile();
             if(file.exists()){
                 System.out.println("Файл существует");
@@ -129,31 +126,47 @@ public class ClientHandler extends Thread {
             fileWriter.close();
         }
         catch (IOException ex) {
-            System.out.println("receive file: " + ex.getMessage());
+            //System.out.println("receive file: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
     //СООБЩЕНИЯ
-
-    /* TODO
-        Доделать метод и константы
-     */
     private void messageHandler(String message){
-        String header = message.substring(0,message.indexOf("["));
-        String body = message.substring(message.indexOf("["));
+        JSONObject json = new JSONObject(message);
+        String header = json.get("type").toString();
         switch (header){
             case loginInfo:
+                login(gson.fromJson(message,LoginMessage.class));
+                break;
             case fileInfo:
+                receiveFile(gson.fromJson(message,FileMessage.class));
+                break;
             case messageInfo:
-            case patchInfo:
-            case requestInfo:
+                messageRouter(gson.fromJson(message,TextMessage.class));
+                break;
+            case disconnectClient:
+                endSession();
+                break;
+            default: sendMessage("ERROR_MESSAGE");
         }
+    }
+
+    private void messageRouter(TextMessage message){
+        message.setSender_id(user.getId());
+        /*if(message.getUser_id()>=0){
+            sendMessageToUser(message.getUser_id(),message);
+        }
+        else
+            sendMessageToChatroom(message);*/
+        sendMessage(gson.toJson(message));
     }
 
     public void sendMessage(String message){
         try {
             out.write(message+"\n");
             out.flush();
+            System.out.println("Сообщение отправлено " + message);
         }
         catch (IOException ex) {
             System.out.println("sendMessage: " + ex.getMessage());
@@ -162,117 +175,76 @@ public class ClientHandler extends Thread {
     }
 
     //отправляет сообщение заданному пользователю
-    public void sendMessageToUser(User user, String message){
-        if(user.isLogged()){
-            user.getClientHandler().sendMessage(message);
+    public synchronized void sendMessageToUser(int userId, TextMessage message){
+        for (User user:Main.userList) {
+            if(user.getId()==userId){
+                user.getClientHandler().sendMessage(gson.toJson(message));
+            }
         }
     }
 
     //отправляет сообщение в заданную чат-комнату
-    private void sendMessage(String message, int chatroom_id){
-        try {
-            out.write(message+"\n");
-            out.flush();
-        }
-        catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
+    private void sendMessageToChatroom(TextMessage message){
+        chatRoom.sendMessageToAll(message);
     }
 
-    /*TODO
-     * Переписать метод
-     */
     //метод входа/регистрации в чате
-    /*private boolean login(String login_message){
-        String message,login,password;
-        boolean login_accepted = false;
-        boolean password_accepted = false;
+    private boolean login(LoginMessage loginMessage) {
         boolean user_found;
-        System.out.println(userList);
-        while (true){
-            user_found = false;
-            switch (message) {
-                case "да":
-                    sendMessage("Введите логин или введите exit");
-                    if(message.equals("exit")){
-                        break;
-                    }
-                    //Ищем пользователя с введенным логином
-                    for (User user : userList)
-                        if (user.getLogin().equals(message)){
-                            user_found = true;
-                            System.out.println("Пользователь найден: " + user.getLogin());
-                            this.user = user;
-                        }
-                    //Если нет - начинаем вхождение сначала
-                    if(!user_found){
-                        System.out.println("Пользователя с таким логином не найдено.");
-                        break;
-                    }
-                    //проверяем пароль
-                    synchronized (user) {
-                        sendMessage("Введите пароль или введите exit");
-                        if(message.equals("exit")){
-                            this.user = null;
-                            break;
-                        }
-                        if (user.getPassword().equals(message)) {
-                            sendMessage("Здравствуйте, " + user.getNickname());
-                            user.setLogged(true);
-                            return true;
-                        } else
-                            sendMessage("Неверный логин или пароль");
-                    }
-                    break;
-                case "нет":
-                    while (!login_accepted) {
-                        sendMessage("Введите логин или отправьте exit");
-                        if (message.equals("exit")) {
-                            return false;
-                        }
-                        if (!message.isEmpty()) {
-                            //Ищем пользователей с полученным логином
-                            System.out.println("Поиск по пользователям");
-                            for (User user : userList)
-                                if (user.getLogin().equals(message)) {
-                                    sendMessage("Логин занят");
-                                    user_found = true;
-                                }
-                            //Записываем новый логин если не нашли пользователя с таким логином
-                            if(!user_found){
-                                login = message;
-                                login_accepted = true;
-                            }
-                        } else
-                            sendMessage("Логин не может быть пустым");
-                    }
+        String login = loginMessage.getLogin(), password = loginMessage.getPassword();
+        user_found = false;
+        //Ищем пользователя с введенным логином
+        for (User user : userList)
+            if (user.getLogin().equals(login)) {
+                user_found = true;
+                System.out.println("Пользователь найден: " + user.getLogin());
+                this.user = user;
+            }
+        if (!user_found) {
+            sendMessage(gson.toJson(new ServiceMessage(loginInfo, userNotFound)));
+            return false;
+        }
 
-                    while (!password_accepted) {
-                        sendMessage("Введите пароль или отправьте exit");
-                        if (message.equals("exit")) {
-                            break;
-                        }
-                        if (!message.isEmpty()) {
-                            password = message;
-                            password_accepted = true;
-                        } else
-                            sendMessage("Пароль не может быть пустым");
-                    }
-                    //Добавляем запись о новом пользователе
-                    this.user = new User(userList.size() - 1, login, password);
-                    if(user.getId()<0){
-                        user.setId(0);
-                    }
-                    userList.add(user);
-                    System.out.println(login + " " + password);
-                    sendMessage("Вы успешно зарегистрированы \n"
-                            + "Ваш логин: " + login + "\n"
-                            + "Ваш пароль: " + password);
-                    sendMessage("Добро пожаловать в " + chatRoom.getName());
-                    return true;
+        if (user.isLogged()) {
+            sendMessage(gson.toJson(new ServiceMessage(loginInfo, userIsLogged)));
+            return false;
+        }
+        //проверяем пароль
+        synchronized (user) {
+            if (user.getPassword().equals(password)) {
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
+                user.setLogged(true);
+                sendMessage("USER"+gson.toJson(user));
+                sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
+                return true;
+            } else {
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, wrongPassword)));
+                this.user = null;
+                return false;
             }
         }
-    }*/
+        /* TODO
+            сделать метод для зарегистрированных пользователей
+         */
+                /*//Ищем пользователей с полученным логином
+                System.out.println("Поиск по пользователям");
+                for (User user : userList)
+                    if (user.getLogin().equals(login)) {
+                        sendMessage(loginIsOccupied);
+                        break;
+                    }
+
+                //Добавляем запись о новом пользователе
+                this.user = new User(userList.size() - 1, login, password);
+                if (user.getId() < 0) {
+                    user.setId(0);
+                }
+                this.user.setLogged(true);
+                userList.add(user);
+                System.out.println(login + " " + password);
+                sendMessage(accepted);
+                return true;*/
+    }
 
     //завершает текущую сессию связи
     public synchronized void endSession(){
@@ -295,7 +267,6 @@ public class ClientHandler extends Thread {
             System.out.println("endsession: " + ex.getMessage());
         }
     }
-
 
     // ГЕТТЕРЫ И СЕТТЕРЫ
 

@@ -1,20 +1,22 @@
 package ru.tsindrenko;
 
+import com.google.gson.annotations.Expose;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 public class User {
-    private int id;
+    private transient int id;
     private String nickname;
     private String login;
     private String password;
-    private String photo;
-    private LocalDateTime muteTime;
-    private boolean isMuted;
-    private boolean isLogged;
-    private ClientHandler clientHandler;
-    private List<ChatRoom> chatRooms;
+    private transient String photo;
+    private transient LocalDateTime muteTime;
+    private transient boolean isMuted;
+    private transient boolean isLogged;
+    private transient ClientHandler clientHandler;
+    private transient List<ChatRoom> chatRooms;
 
     User(){
         this.nickname = "Anonimus";
@@ -25,6 +27,14 @@ public class User {
     User(int id, String login, String password) {
         this.id = id;
         this.nickname = "Аноним";
+        this.login = login;
+        this.password = password;
+        this.isMuted = false;
+        this.isLogged = false;
+    }
+
+    User(String login, String password, String nickname){
+        this.nickname = nickname;
         this.login = login;
         this.password = password;
         this.isMuted = false;
