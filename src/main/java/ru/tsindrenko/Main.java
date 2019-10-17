@@ -11,15 +11,15 @@ public class Main {
 
     final static int port = 8080;
     final static String file_directory = "D:\\JavaProjects\\Chat\\src\\main\\resources\\files\\";
+    final static DatabaseConnector databaseConnector = new DatabaseConnector();
     static List<ClientHandler> clientHandlerList = new LinkedList<>();
     static List<ChatRoom> chatRooms = new LinkedList<>();
     static List<User> userList = new LinkedList<>();
 
     public static void main(String [] args) throws IOException{
-        chatRooms.add(new ChatRoom(0,"Общий чат",clientHandlerList));
-        userList.add(new User(1,"bal","123"));
+        //chatRooms.addAll(databaseConnector.getChatrooms());
+        //userList.addAll(databaseConnector.getUsers());
         Gson gson = new Gson();
-        System.out.println(gson.toJson(userList.get(0)));
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
     }
 

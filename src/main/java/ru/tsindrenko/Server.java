@@ -29,7 +29,7 @@ public class Server extends Thread {
                 System.out.println("Слушаем...");
                 socket = server.accept();
                 clientHandlerList.add(new ClientHandler(socket, userList));
-                clientHandlerList.get(clientHandlerList.size()-1).setChatRoom(chatRooms.get(0));
+                clientHandlerList.get(clientHandlerList.size()-1).setChatRoomId(0);
                 System.out.println("Клиент подключился");
             }
             catch (IOException ex){

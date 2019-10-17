@@ -5,28 +5,26 @@ import java.time.ZoneId;
 
 public class Admin extends User {
 
-    private ChatRoom chatRoom;
+    private static Integer chatRoom_id;
 
     Admin(){
     }
 
-    Admin(ChatRoom chatRoom){
-        this.chatRoom = chatRoom;
+    Admin(Integer chatRoom_id){
+        this.chatRoom_id = chatRoom_id;
     }
 
-    public synchronized void banUser(User user){
-        chatRoom.getBlacklist().add(user);
-        chatRoom.getParticipants().remove(user.getClientHandler());
-        System.out.println("Пользователь забанен " + user.getLogin());
+   /* public static synchronized void banUser(Integer user_id){
+        Main.databaseConnector.gchatRoom_id.getBlacklist().add(user_id);
+        chatRoom_id.getParticipants().remove(user_id);
     }
 
-    public synchronized void unbanUser(User user){
-        chatRoom.getBlacklist().remove(user);
-        chatRoom.getParticipants().add(user.getClientHandler());
-        System.out.println("Пользователь забанен " + user.getLogin());
+    public static synchronized void unbanUser(Integer user_id){
+        chatRoom_id.getBlacklist().remove(user_id);
+        chatRoom_id.getParticipants().add(user_id);
     }
 
-    public synchronized void muteUser(User user){
+    /*public synchronized void muteUser(User user){
         chatRoom.getMutelist().add(new Mute(user, LocalDateTime.now(ZoneId.of("Europe/Moscow")).plusMinutes(1)));
         System.out.println("Пользователь не может говорить");
     }
@@ -40,14 +38,14 @@ public class Admin extends User {
             }
         }
     }
-
+*/
     // геттеры и сеттеры
 
-    public ChatRoom getChatRoom() {
-        return chatRoom;
+    public Integer getChatRoom_id() {
+        return chatRoom_id;
     }
 
-    public void setChatRoom(ChatRoom chatRoom) {
-        this.chatRoom = chatRoom;
+    public void setChatRoom_id(Integer chatRoom_id) {
+        this.chatRoom_id = chatRoom_id;
     }
 }

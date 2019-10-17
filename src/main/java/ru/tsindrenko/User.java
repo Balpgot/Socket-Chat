@@ -1,22 +1,19 @@
 package ru.tsindrenko;
 
-import com.google.gson.annotations.Expose;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class User {
-    private transient int id;
+
+    private final String type = "USER";
+    private int id;
     private String nickname;
     private String login;
     private String password;
     private transient String photo;
-    private transient LocalDateTime muteTime;
-    private transient boolean isMuted;
-    private transient boolean isLogged;
+    private boolean isOnline;
     private transient ClientHandler clientHandler;
-    private transient List<ChatRoom> chatRooms;
+    private transient List<Integer> chatRooms = new ArrayList<>();
+    private transient Queue<String> messageQueue = new LinkedList<>();
 
     User(){
         this.nickname = "Anonimus";
@@ -29,16 +26,32 @@ public class User {
         this.nickname = "Аноним";
         this.login = login;
         this.password = password;
-        this.isMuted = false;
-        this.isLogged = false;
+        this.isOnline = false;
     }
 
     User(String login, String password, String nickname){
         this.nickname = nickname;
         this.login = login;
         this.password = password;
-        this.isMuted = false;
-        this.isLogged = false;
+        this.isOnline = false;
+    }
+
+    User(int id, String login, String password, String nickname){
+        this.id = id;
+        this.nickname = nickname;
+        this.login = login;
+        this.password = password;
+        this.photo = null;
+        this.isOnline = false;
+    }
+
+    User(int id, String login, String password, String nickname, String photo){
+        this.id = id;
+        this.nickname = nickname;
+        this.login = login;
+        this.password = password;
+        this.photo = photo;
+        this.isOnline = false;
     }
 
     //геттеры и сеттеры
@@ -83,28 +96,12 @@ public class User {
         this.photo = photo;
     }
 
-    public LocalDateTime getMuteTime() {
-        return muteTime;
+    public boolean isOnline() {
+        return isOnline;
     }
 
-    public void setMuteTime(LocalDateTime muteTime) {
-        this.muteTime = muteTime;
-    }
-
-    public boolean isMuted() {
-        return isMuted;
-    }
-
-    public void setMuted(boolean muted) {
-        isMuted = muted;
-    }
-
-    public boolean isLogged() {
-        return isLogged;
-    }
-
-    public void setLogged(boolean logged) {
-        isLogged = logged;
+    public void setOnline(boolean online) {
+        isOnline = online;
     }
 
     public ClientHandler getClientHandler() {
@@ -113,6 +110,14 @@ public class User {
 
     public void setClientHandler(ClientHandler clientHandler) {
         this.clientHandler = clientHandler;
+    }
+
+    public List<Integer> getChatRooms() {
+        return chatRooms;
+    }
+
+    public void setChatRooms(List<Integer> chatRooms) {
+        this.chatRooms = chatRooms;
     }
 
     @Override
