@@ -17,8 +17,8 @@ public class Main {
     static List<User> userList = new LinkedList<>();
 
     public static void main(String [] args) throws IOException{
-        chatRooms.addAll(databaseConnector.getChatrooms());
-        userList.addAll(databaseConnector.getUsers());
+        //chatRooms.addAll(databaseConnector.getChatrooms());
+        //userList.addAll(databaseConnector.getUsers());
         Gson gson = new Gson();
         Server server = new Server(port, clientHandlerList, chatRooms, userList);
     }

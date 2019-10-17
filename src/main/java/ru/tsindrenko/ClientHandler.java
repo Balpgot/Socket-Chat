@@ -33,16 +33,14 @@ public class ClientHandler extends Thread {
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
     private boolean is_active; //активен ли клиент
-    private ChatRoom chatRoom;//текущий чат
+    private int chatRoomId;//текущий чат
     private int dialogUserId;//id пользователя - собеседника
-    private List<User> userList; // список всех пользователей
     private User user; //пользователь, закрепленный за данным клиентом
     private Gson gson;
 
 
     public ClientHandler(Socket socket, List<User> userList) throws IOException{
         this.clientSocket = socket;
-        this.userList = userList;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8));
         this.is_active = true;
@@ -205,7 +203,7 @@ public class ClientHandler extends Thread {
 
     //отправляет сообщение в заданную чат-комнату
     private void sendMessageToChatroom(TextMessage message){
-        chatRoom.sendMessageToAll(message);
+        Main.databaseConnector.getChatroom(message.getChatroom_id()).sendMessageToAll(message);
     }
 
     //метод входа/регистрации в чате
@@ -237,7 +235,7 @@ public class ClientHandler extends Thread {
                 sendMessage(gson.toJson(user));
                 sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
                 sendMessage(gson.toJson(user.getChatRooms()));
-                this.chatRoom = Main.chatRooms.get(0);
+                this.chatRoomId = 0;
                 return true;
             } else {
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, wrongPassword)));
@@ -263,10 +261,9 @@ public class ClientHandler extends Thread {
         }
         this.user.setOnline(true);
         userList.add(user);
-        user.getChatRooms().add(Main.chatRooms.get(0));
+        user.getChatRooms().add(0);
         Main.databaseConnector.addUser(user);
         System.out.println(user.getLogin() + " " + user.getPassword());
-        this.user.setChatRooms(Main.chatRooms);
         sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
         sendMessage(gson.toJson(this.user));
         sendMessage(gson.toJson(user.getChatRooms()));
@@ -297,8 +294,8 @@ public class ClientHandler extends Thread {
 
     // ГЕТТЕРЫ И СЕТТЕРЫ
 
-    public void setChatRoom(ChatRoom chatRoom){
-        this.chatRoom = chatRoom;
+    public void setChatRoomId(int chatRoomId){
+        this.chatRoomId = chatRoomId;
     }
 
     public boolean isActive(){
@@ -317,8 +314,8 @@ public class ClientHandler extends Thread {
         this.is_active = active;
     }
 
-    public ChatRoom getChatRoom() {
-        return chatRoom;
+    public int getChatRoomId() {
+        return chatRoomId;
     }
 
     public void setIs_active(boolean is_active) {

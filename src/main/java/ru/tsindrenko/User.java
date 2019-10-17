@@ -1,8 +1,6 @@
 package ru.tsindrenko;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class User {
 
@@ -12,11 +10,10 @@ public class User {
     private String login;
     private String password;
     private transient String photo;
-    //private transient LocalDateTime muteTime;
-    //private transient boolean isMuted;
-    private transient boolean isOnline;
+    private boolean isOnline;
     private transient ClientHandler clientHandler;
     private transient List<Integer> chatRooms = new ArrayList<>();
+    private transient Queue<String> messageQueue = new LinkedList<>();
 
     User(){
         this.nickname = "Anonimus";

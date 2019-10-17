@@ -16,8 +16,6 @@ public class DatabaseConnector {
         try {
             // opening database connection to MySQL server
             connection = DriverManager.getConnection(url, login, password);
-            // getting Statement object to execute query
-
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         }
@@ -58,7 +56,7 @@ public class DatabaseConnector {
                         users.getString(3),
                         users.getString(4),
                         users.getString(5));
-                user.setChatRooms(getUserChatrooms(user.getId()));
+                user.setChatRooms(getUserChatroomsId(user.getId()));
                 userList.add(user);
             }
             users.close();
@@ -78,7 +76,7 @@ public class DatabaseConnector {
                 chatRoom = new ChatRoom(
                         resultSet.getInt(1),
                         resultSet.getString(2));
-                chatRoom.getParticipants().addAll(getChatroomParticipants(chatRoom.getId()));
+                chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
                 chatRoom.setAdmin_id(getUser(resultSet.getInt(3)).getId());
                 chatRoomList.add(chatRoom);
             }
@@ -88,6 +86,36 @@ public class DatabaseConnector {
             ex.printStackTrace();
         }
         return chatRoomList;
+    }
+
+    public List<Integer> getChatroomsId(){
+        ResultSet resultSet = executeQuery("SELECT id FROM chatrooms WHERE is_deleted=0");
+        List<Integer> chatRoomList = new ArrayList<>();
+        try{
+            while (resultSet.next()) {
+                chatRoomList.add(resultSet.getInt(1));
+            }
+            resultSet.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return chatRoomList;
+    }
+
+    public List<Integer> getUsersId(){
+        ResultSet resultSet = executeQuery("SELECT id FROM users WHERE is_deleted=0");
+        List<Integer> usersList = new ArrayList<>();
+        try{
+            while (resultSet.next()) {
+                usersList.add(resultSet.getInt(1));
+            }
+            resultSet.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return usersList;
     }
 
     public User getUser(int id){
@@ -100,6 +128,7 @@ public class DatabaseConnector {
                     userDB.getString(3),
                     userDB.getString(4),
                     userDB.getString(5));
+             user.setOnline(userDB.getBoolean(6));
              userDB.close();
         }
         catch (SQLException ex){
@@ -107,6 +136,27 @@ public class DatabaseConnector {
         }
         return user;
     }
+
+    public User getUser(String name){
+        ResultSet userDB = executeQuery("SELECT * FROM users WHERE name='"+name+"'");
+        User user = null;
+        try {
+            userDB.next();
+            user = new User(userDB.getInt(1),
+                    userDB.getString(2),
+                    userDB.getString(3),
+                    userDB.getString(4),
+                    userDB.getString(5));
+            user.setOnline(userDB.getBoolean(6));
+            userDB.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            ex.getMessage();
+        }
+        return user;
+    }
+
 
     public ChatRoom getChatroom(int id){
         ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE id="+id);
@@ -124,21 +174,38 @@ public class DatabaseConnector {
         return chatRoom;
     }
 
+    public ChatRoom getChatroom(String name){
+        ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE name='"+name+"'");
+        ChatRoom chatRoom = null;
+        try {
+            chatroomDB.next();
+            chatRoom = new ChatRoom(chatroomDB.getInt(1),
+                    chatroomDB.getString(2),
+                    chatroomDB.getInt(3));
+            chatroomDB.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            ex.getMessage();
+        }
+        return chatRoom;
+    }
+
     public List<Integer> getUserChatroomsId(int id){
-        ResultSet resultSet = executeQuery("SELECT chatrooms.id,chatrooms.name,chatrooms.administrator " +
+        ResultSet resultSet = executeQuery("SELECT chatrooms.id " +
                 "FROM chatrooms,chatroom_users " +
                 "WHERE chatrooms.is_deleted=0 AND chatroom_users.user_id =" + id + " AND chatroom_users.chatroom_id = chatrooms.id");
-        List<ChatRoom> chatRoomList = new ArrayList<>();
+        List<Integer> chatRoomList = new ArrayList<>();
+
         try{
             while (resultSet.next()) {
-                chatRoomList.add(new ChatRoom(
-                        resultSet.getInt(1),
-                        resultSet.getString(2)));
+                chatRoomList.add(resultSet.getInt(1));
             }
             resultSet.close();
         }
         catch (SQLException ex) {
             ex.printStackTrace();
+            ex.getErrorCode();
         }
         return chatRoomList;
     }
@@ -194,6 +261,72 @@ public class DatabaseConnector {
         }
     }
 
+    public void addUserToChatroom(int chatroomId, int userId, boolean is_moderator){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            String query = "INSERT INTO chatroom_users (chatroom_id,user_id,is_moderator,is_blacklisted,is_participant) VALUES ('" +
+                    chatroomId + "','" + userId + "','";
+            if(is_moderator){
+                query+="1'";
+            }
+            else
+                query+="0'";
+            query+=",'0','1'";
+            statement.executeUpdate(query);
+            statement.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void banUser(int user_id, int chatroom_id){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=0,is_blacklisted=1,is_participant=0 WHERE chatroom_id='"+
+                    chatroom_id+"',user_id='"+user_id+"'");
+            statement.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void makeUserModerator(int user_id, int chatroom_id){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=1 WHERE chatroom_id='"+
+                    chatroom_id+"',user_id='"+user_id+"',is_blacklisted='0'");
+            statement.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void makeUserOnline(int user_id, boolean is_online){
+        Statement statement;
+        try {
+            StringBuffer query = new StringBuffer("UPDATE users SET is_online='");
+            statement = connection.createStatement();
+            if(is_online){
+                query.append("1' ");
+            }
+            else
+                query.append("0' ");
+            query.append("WHERE id='");
+            query.append(user_id);
+            query.append("'");
+            statement.executeUpdate(query.toString());
+            statement.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
 
     //геттеры сеттеры
     public  String getUrl() {

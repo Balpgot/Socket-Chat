@@ -14,7 +14,7 @@ public class Admin extends User {
         this.chatRoom_id = chatRoom_id;
     }
 
-    public static synchronized void banUser(Integer user_id){
+   /* public static synchronized void banUser(Integer user_id){
         Main.databaseConnector.gchatRoom_id.getBlacklist().add(user_id);
         chatRoom_id.getParticipants().remove(user_id);
     }
