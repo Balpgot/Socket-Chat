@@ -6,8 +6,9 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Random;
 
 public class ClientHandler extends Thread {
 
@@ -16,6 +17,8 @@ public class ClientHandler extends Thread {
     private final String loginInfo = "LOGIN";
     private final String fileInfo = "FILE";
     private final String serviceInfo = "SERVICE";
+    private final String chatroomInfo = "CHATROOM";
+    private final String userInfo = "USER";
     private final String messageInfo = "TEXT";
     private final String patchInfo = "PATCH_INFO";
     private final String requestInfo = "REQUEST_INFO";
@@ -25,6 +28,7 @@ public class ClientHandler extends Thread {
     private final String userIsLogged = "USER_IS_LOGGED";
     private static final String avatar = "avatar";
     private static final String fileType = "file";
+
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
@@ -39,8 +43,8 @@ public class ClientHandler extends Thread {
     public ClientHandler(Socket socket, List<User> userList) throws IOException{
         this.clientSocket = socket;
         this.userList = userList;
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8));
         this.is_active = true;
         this.user = null;
         this.gson = new Gson();
@@ -58,11 +62,17 @@ public class ClientHandler extends Thread {
                 System.out.println("Сообщение: " + message);
             }
         }
+        catch (SocketException ex){
+            System.out.println("SOCKET EX run: " + ex.getMessage());
+            ex.printStackTrace();
+            endSession();
+        }
         catch (IOException ex) {
             System.out.println("CH run: " + ex.getMessage());
             ex.printStackTrace();
             endSession();
         }
+
     }
 
     //РАБОТА С ФАЙЛАМИ
@@ -99,13 +109,23 @@ public class ClientHandler extends Thread {
             //объявляем размер пакета
             byte [] bytes = new byte[8192];
             //устанавливаем файл на запись
-            File file = new File(new StringBuffer().
+            File directory = new File(new StringBuffer().
                             append(Main.file_directory).
                             append(user.getId()).
-                            append("//").
+                            append("\\").
                             append(fileMessage.getFileType()).
-                            append("//").
-                            append("1.txt").toString());
+                            append("\\").toString());
+            if(!directory.exists()){
+                directory.mkdirs();
+            }
+            File file = new File(new StringBuffer().
+                    append(Main.file_directory).
+                    append(user.getId()).
+                    append("\\").
+                    append(fileMessage.getFileType()).
+                    append("\\").
+                    append("1.txt").toString());
+            System.out.println(file.getPath());
             file.createNewFile();
             if(file.exists()){
                 System.out.println("Файл существует");
@@ -126,7 +146,6 @@ public class ClientHandler extends Thread {
             fileWriter.close();
         }
         catch (IOException ex) {
-            //System.out.println("receive file: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -148,18 +167,19 @@ public class ClientHandler extends Thread {
             case disconnectClient:
                 endSession();
                 break;
+            case userInfo:
+                registration(gson.fromJson(message,User.class));
+                break;
             default: sendMessage("ERROR_MESSAGE");
         }
     }
 
     private void messageRouter(TextMessage message){
-        message.setSender_id(user.getId());
-        /*if(message.getUser_id()>=0){
+        if(message.getUser_id()>=0){
             sendMessageToUser(message.getUser_id(),message);
         }
         else
-            sendMessageToChatroom(message);*/
-        sendMessage(gson.toJson(message));
+            sendMessageToChatroom(message);
     }
 
     public void sendMessage(String message){
@@ -205,7 +225,7 @@ public class ClientHandler extends Thread {
             return false;
         }
 
-        if (user.isLogged()) {
+        if (user.isOnline()) {
             sendMessage(gson.toJson(new ServiceMessage(loginInfo, userIsLogged)));
             return false;
         }
@@ -213,9 +233,11 @@ public class ClientHandler extends Thread {
         synchronized (user) {
             if (user.getPassword().equals(password)) {
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
-                user.setLogged(true);
-                sendMessage("USER"+gson.toJson(user));
+                user.setOnline(true);
+                sendMessage(gson.toJson(user));
                 sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
+                sendMessage(gson.toJson(user.getChatRooms()));
+                this.chatRoom = Main.chatRooms.get(0);
                 return true;
             } else {
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, wrongPassword)));
@@ -223,27 +245,33 @@ public class ClientHandler extends Thread {
                 return false;
             }
         }
-        /* TODO
-            сделать метод для зарегистрированных пользователей
-         */
-                /*//Ищем пользователей с полученным логином
-                System.out.println("Поиск по пользователям");
-                for (User user : userList)
-                    if (user.getLogin().equals(login)) {
-                        sendMessage(loginIsOccupied);
-                        break;
-                    }
+    }
 
-                //Добавляем запись о новом пользователе
-                this.user = new User(userList.size() - 1, login, password);
-                if (user.getId() < 0) {
-                    user.setId(0);
-                }
-                this.user.setLogged(true);
-                userList.add(user);
-                System.out.println(login + " " + password);
-                sendMessage(accepted);
-                return true;*/
+    private boolean registration(User user) {
+        //Ищем пользователей с полученным логином
+        System.out.println("Поиск по пользователям");
+        for (User currentUser : userList)
+            if (currentUser.getLogin().equals(user.getLogin())) {
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, loginIsOccupied)));
+                return false;
+            }
+
+        //Добавляем запись о новом пользователе
+        this.user = new User(userList.size() - 1, user.getLogin(), user.getPassword(), user.getNickname());
+        if (user.getId() < 0) {
+            user.setId(0);
+        }
+        this.user.setOnline(true);
+        userList.add(user);
+        user.getChatRooms().add(Main.chatRooms.get(0));
+        Main.databaseConnector.addUser(user);
+        System.out.println(user.getLogin() + " " + user.getPassword());
+        this.user.setChatRooms(Main.chatRooms);
+        sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
+        sendMessage(gson.toJson(this.user));
+        sendMessage(gson.toJson(user.getChatRooms()));
+        sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
+        return true;
     }
 
     //завершает текущую сессию связи
@@ -254,8 +282,7 @@ public class ClientHandler extends Thread {
         System.out.println("Клиент отключился");
         is_active = false;
         if(!(user==null)){
-            Main.userList.remove(user);
-            user.setLogged(false);
+            user.setOnline(false);
             user.setClientHandler(null);
         }
         try {
