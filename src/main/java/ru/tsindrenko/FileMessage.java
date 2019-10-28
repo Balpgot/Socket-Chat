@@ -4,10 +4,12 @@ public class FileMessage {
     private final String type = "FILE";
     private long size;
     private String fileType;
+    private String fileName;
 
-    public FileMessage(long size, String fileType) {
+    public FileMessage(long size, String fileType, String fileName) {
         this.size = size;
         this.fileType = fileType;
+        this.fileName = fileName;
     }
 
     public String getType() {
@@ -30,4 +32,11 @@ public class FileMessage {
         this.fileType = fileType;
     }
 
+    public String getFilename() {
+        return fileName;
+    }
+
+    public void setFilename(String filename) {
+        this.fileName = fileName;
+    }
 }

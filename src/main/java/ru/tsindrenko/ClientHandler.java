@@ -8,7 +8,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.HashSet;
 
 public class ClientHandler extends Thread {
 
@@ -34,18 +34,18 @@ public class ClientHandler extends Thread {
     private BufferedWriter out; // поток записи в сокет
     private boolean is_active; //активен ли клиент
     private int chatRoomId;//текущий чат
-    private int dialogUserId;//id пользователя - собеседника
     private User user; //пользователь, закрепленный за данным клиентом
     private Gson gson;
 
 
-    public ClientHandler(Socket socket, List<User> userList) throws IOException{
+    public ClientHandler(Socket socket) throws IOException{
         this.clientSocket = socket;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8));
         this.is_active = true;
         this.user = null;
         this.gson = new Gson();
+        Main.clientHandlerList.add(this);
         start(); // вызываем run()
     }
 
@@ -56,8 +56,8 @@ public class ClientHandler extends Thread {
             while (true) {
                 //начинаем прослушивать сообщения
                 message = in.readLine();
-                messageHandler(message);
                 System.out.println("Сообщение: " + message);
+                messageHandler(message);
             }
         }
         catch (SocketException ex){
@@ -82,7 +82,7 @@ public class ClientHandler extends Thread {
             FileInputStream fis = new FileInputStream(file.getPath());
             //отправляем клиенту размер файла
             long size = file.length();
-            FileMessage fileMessage = new FileMessage(size,fileType);
+            FileMessage fileMessage = new FileMessage(size,fileType,file.getName());
             sendMessage(gson.toJson(fileMessage));
             System.out.println("Начинаю оправлять");
             BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
@@ -122,7 +122,7 @@ public class ClientHandler extends Thread {
                     append("\\").
                     append(fileMessage.getFileType()).
                     append("\\").
-                    append("1.txt").toString());
+                    append(fileMessage.getFilename()).toString());
             System.out.println(file.getPath());
             file.createNewFile();
             if(file.exists()){
@@ -160,7 +160,7 @@ public class ClientHandler extends Thread {
                 receiveFile(gson.fromJson(message,FileMessage.class));
                 break;
             case messageInfo:
-                messageRouter(gson.fromJson(message,TextMessage.class));
+                sendMessageToChatroom(gson.fromJson(message,TextMessage.class));
                 break;
             case disconnectClient:
                 endSession();
@@ -170,14 +170,6 @@ public class ClientHandler extends Thread {
                 break;
             default: sendMessage("ERROR_MESSAGE");
         }
-    }
-
-    private void messageRouter(TextMessage message){
-        if(message.getUser_id()>=0){
-            sendMessageToUser(message.getUser_id(),message);
-        }
-        else
-            sendMessageToChatroom(message);
     }
 
     public void sendMessage(String message){
@@ -196,14 +188,19 @@ public class ClientHandler extends Thread {
     public synchronized void sendMessageToUser(int userId, TextMessage message){
         for (User user:Main.userList) {
             if(user.getId()==userId){
-                user.getClientHandler().sendMessage(gson.toJson(message));
+                Main.clientHandlerMap.get(user).sendMessage(gson.toJson(message));
             }
         }
     }
 
     //отправляет сообщение в заданную чат-комнату
     private void sendMessageToChatroom(TextMessage message){
-        Main.databaseConnector.getChatroom(message.getChatroom_id()).sendMessageToAll(message);
+        if(message.getChatroom_id()==0){
+            Main.chatRoomMap.get(1).sendMessageToAll(message);
+        }
+        else{
+            Main.chatRoomMap.get(message.getChatroom_id()).sendMessageToAll(message);
+        }
     }
 
     //метод входа/регистрации в чате
@@ -212,17 +209,19 @@ public class ClientHandler extends Thread {
         String login = loginMessage.getLogin(), password = loginMessage.getPassword();
         user_found = false;
         //Ищем пользователя с введенным логином
+        HashSet<User> userList = Main.userList;
         for (User user : userList)
             if (user.getLogin().equals(login)) {
                 user_found = true;
                 System.out.println("Пользователь найден: " + user.getLogin());
                 this.user = user;
             }
+        //если пользователь не найден сообщаем клиенту
         if (!user_found) {
             sendMessage(gson.toJson(new ServiceMessage(loginInfo, userNotFound)));
             return false;
         }
-
+        //если уже авторизован сообщаем клиенту
         if (user.isOnline()) {
             sendMessage(gson.toJson(new ServiceMessage(loginInfo, userIsLogged)));
             return false;
@@ -230,14 +229,27 @@ public class ClientHandler extends Thread {
         //проверяем пароль
         synchronized (user) {
             if (user.getPassword().equals(password)) {
-                sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
+                //меняем статус пользователя
                 user.setOnline(true);
+                this.chatRoomId = 1;
+                user.setClientHandler(this);
+                //сообщаем клиенту об успешном входе, отправляем сервисные сообщения
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
                 sendMessage(gson.toJson(user));
-                sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
                 sendMessage(gson.toJson(user.getChatRooms()));
-                this.chatRoomId = 0;
+                //приветствуем
+                sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, "SERVER", 1, "Общий чат")));
+                //сообщаем БД о статусе пользователя
+                Main.databaseConnector.makeUserOnline(user.getId(),true);
+                //добавляем соответствие CH и пользователя
+                Main.clientHandlerMap.put(user,this);
+                //отправляем все отложенные сообщения
+                while (user.getMessageQueue().size()>0){
+                    sendMessage(user.getMessageQueue().poll());
+                }
                 return true;
             } else {
+                //отправляем сообщение о неверном пароле
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, wrongPassword)));
                 this.user = null;
                 return false;
@@ -248,6 +260,7 @@ public class ClientHandler extends Thread {
     private boolean registration(User user) {
         //Ищем пользователей с полученным логином
         System.out.println("Поиск по пользователям");
+        HashSet<User> userList = Main.userList;
         for (User currentUser : userList)
             if (currentUser.getLogin().equals(user.getLogin())) {
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, loginIsOccupied)));
@@ -255,19 +268,27 @@ public class ClientHandler extends Thread {
             }
 
         //Добавляем запись о новом пользователе
-        this.user = new User(userList.size() - 1, user.getLogin(), user.getPassword(), user.getNickname());
-        if (user.getId() < 0) {
-            user.setId(0);
-        }
+        this.user = new User(user.getLogin(), user.getPassword(), user.getNickname());
         this.user.setOnline(true);
-        userList.add(user);
-        user.getChatRooms().add(0);
+        //добавляем пользователя в общий список
+        Main.userList.add(user);
+        //добавляем пользователя в общий чат
+        user.getChatRooms().add(1);
+        this.chatRoomId = 1;
+        //добавляем пользователя в БД
         Main.databaseConnector.addUser(user);
+        //устанавливаем ID пользователя
+        this.user.setId(Main.databaseConnector.getUser(user.getLogin()).getId());
         System.out.println(user.getLogin() + " " + user.getPassword());
+        //отсылаем на клиент серверные сообщения
         sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
         sendMessage(gson.toJson(this.user));
         sendMessage(gson.toJson(user.getChatRooms()));
-        sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, -1, user.getId(),"SERVER")));
+        //отсылаем приветствие
+        sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0,"SERVER", 1, "Общий чат")));
+        //обозначаем CH для польователя
+        user.setClientHandler(this);
+        Main.clientHandlerMap.put(user,this);
         return true;
     }
 
@@ -278,17 +299,21 @@ public class ClientHandler extends Thread {
         }
         System.out.println("Клиент отключился");
         is_active = false;
-        if(!(user==null)){
-            user.setOnline(false);
-            user.setClientHandler(null);
-        }
+        //закрываем потоки, убираем из списков
         try {
             in.close();
             out.close();
             Main.clientHandlerList.remove(this);
+            Main.clientHandlerMap.remove(user);
         }
         catch (IOException ex) {
             System.out.println("endsession: " + ex.getMessage());
+        }
+        //удаляем данные о пользователе
+        if(user!=null){
+            user.setOnline(false);
+            Main.databaseConnector.makeUserOnline(user.getId(),false);
+            user.setClientHandler(null);
         }
     }
 
@@ -328,5 +353,13 @@ public class ClientHandler extends Thread {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "ClientHandler{" +
+                "is_active=" + is_active +
+                ", user=" + user +
+                '}';
     }
 }

@@ -120,6 +120,14 @@ public class User {
         this.chatRooms = chatRooms;
     }
 
+    public Queue<String> getMessageQueue() {
+        return messageQueue;
+    }
+
+    public void setMessageQueue(Queue<String> messageQueue) {
+        this.messageQueue = messageQueue;
+    }
+
     @Override
     public String toString() {
         return "User{" +

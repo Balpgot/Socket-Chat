@@ -2,6 +2,7 @@ package ru.tsindrenko;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class DatabaseConnector {
@@ -44,9 +45,9 @@ public class DatabaseConnector {
 
     //методы для получения данных
 
-    public List<User> getUsers(){
+    public HashSet<User> getUsers(){
         ResultSet users = executeQuery("SELECT * FROM users WHERE is_deleted=0");
-        List<User> userList = new ArrayList<>();
+        HashSet<User> userList = new HashSet<>();
         User user;
         try{
             while (users.next()) {
@@ -58,6 +59,7 @@ public class DatabaseConnector {
                         users.getString(5));
                 user.setChatRooms(getUserChatroomsId(user.getId()));
                 userList.add(user);
+                System.out.println("GU= "  + user);
             }
             users.close();
         }
@@ -77,7 +79,8 @@ public class DatabaseConnector {
                         resultSet.getInt(1),
                         resultSet.getString(2));
                 chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
-                chatRoom.setAdmin_id(getUser(resultSet.getInt(3)).getId());
+                chatRoom.setAdmin_id(resultSet.getInt(3));
+                chatRoom.setIsDialog(resultSet.getBoolean(5));
                 chatRoomList.add(chatRoom);
             }
             resultSet.close();
@@ -122,14 +125,19 @@ public class DatabaseConnector {
         ResultSet userDB = executeQuery("SELECT * FROM users WHERE id="+id);
         User user = null;
         try {
-             userDB.next();
-             user = new User(userDB.getInt(1),
-                    userDB.getString(2),
-                    userDB.getString(3),
-                    userDB.getString(4),
-                    userDB.getString(5));
-             user.setOnline(userDB.getBoolean(6));
-             userDB.close();
+             if(userDB.next()){
+                 user = new User(userDB.getInt(1),
+                         userDB.getString(2),
+                         userDB.getString(3),
+                         userDB.getString(4),
+                         userDB.getString(5));
+                 user.setOnline(userDB.getBoolean(6));
+                 userDB.close();
+             }
+             else{
+                 userDB.close();
+                 return null;
+             }
         }
         catch (SQLException ex){
             ex.printStackTrace();
@@ -137,18 +145,23 @@ public class DatabaseConnector {
         return user;
     }
 
-    public User getUser(String name){
-        ResultSet userDB = executeQuery("SELECT * FROM users WHERE name='"+name+"'");
+    public User getUser(String login){
+        ResultSet userDB = executeQuery("SELECT * FROM users WHERE login='"+login+"'");
         User user = null;
         try {
-            userDB.next();
-            user = new User(userDB.getInt(1),
-                    userDB.getString(2),
-                    userDB.getString(3),
-                    userDB.getString(4),
-                    userDB.getString(5));
-            user.setOnline(userDB.getBoolean(6));
-            userDB.close();
+            if(userDB.next()){
+                user = new User(userDB.getInt(1),
+                        userDB.getString(2),
+                        userDB.getString(3),
+                        userDB.getString(4),
+                        userDB.getString(5));
+                user.setOnline(userDB.getBoolean(6));
+                userDB.close();
+            }
+            else {
+                userDB.close();
+                return null;
+            }
         }
         catch (SQLException ex){
             ex.printStackTrace();
@@ -159,14 +172,22 @@ public class DatabaseConnector {
 
 
     public ChatRoom getChatroom(int id){
-        ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE id="+id);
+        ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE id='"+id+"'");
         ChatRoom chatRoom = null;
         try {
-            chatroomDB.next();
-            chatRoom = new ChatRoom(chatroomDB.getInt(1),
-                    chatroomDB.getString(2),
-                    chatroomDB.getInt(3));
-            chatroomDB.close();
+            if(chatroomDB.next()){
+                chatRoom = new ChatRoom(chatroomDB.getInt(1),
+                        chatroomDB.getString(2),
+                        chatroomDB.getInt(3));
+                chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
+                chatRoom.setAdmin_id(chatroomDB.getInt(3));
+                chatRoom.setIsDialog(chatroomDB.getBoolean(5));
+                chatroomDB.close();
+            }
+            else{
+                chatroomDB.close();
+                return null;
+            }
         }
         catch (SQLException ex){
             ex.printStackTrace();
@@ -178,11 +199,19 @@ public class DatabaseConnector {
         ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE name='"+name+"'");
         ChatRoom chatRoom = null;
         try {
-            chatroomDB.next();
-            chatRoom = new ChatRoom(chatroomDB.getInt(1),
-                    chatroomDB.getString(2),
-                    chatroomDB.getInt(3));
-            chatroomDB.close();
+            if(chatroomDB.next()){
+                chatRoom = new ChatRoom(chatroomDB.getInt(1),
+                        chatroomDB.getString(2),
+                        chatroomDB.getInt(3));
+                chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
+                chatRoom.setAdmin_id(chatroomDB.getInt(3));
+                chatRoom.setIsDialog(chatroomDB.getBoolean(5));
+                chatroomDB.close();
+            }
+            else{
+                chatroomDB.close();
+                return null;
+            }
         }
         catch (SQLException ex){
             ex.printStackTrace();
@@ -210,11 +239,10 @@ public class DatabaseConnector {
         return chatRoomList;
     }
 
-    public List<Integer> getChatroomParticipantsId(int id){
-        ResultSet resultSet = executeQuery("SELECT users.id" +
-                "FROM users,chatroom_users " +
-                "WHERE users.is_deleted=0 AND chatroom_users.chatroom_id =" + id + " AND chatroom_users.user_id = users.id");
-        List<Integer> userList = new ArrayList<>();
+    public HashSet<Integer> getChatroomParticipantsId(int id){
+        ResultSet resultSet = executeQuery("SELECT DISTINCT chatroom_users.user_id FROM chatroom_users,users WHERE " +
+                "chatroom_users.is_participant = 1 AND chatroom_users.chatroom_id =" + id +" AND chatroom_users.user_id IN (SELECT users.id FROM users WHERE users.is_deleted = 0)");
+        HashSet<Integer> userList = new HashSet<>();
         try{
             while (resultSet.next()) {
                userList.add(resultSet.getInt(1));
@@ -234,7 +262,9 @@ public class DatabaseConnector {
             statement.executeUpdate("INSERT INTO users (users.login,users.password,users.nickname,users.avatar,users.is_deleted) VALUES ('" +
                     user.getLogin() + "','" + user.getPassword() + "','" +
                     user.getNickname() + "','" + user.getPhoto()+ "','0')");
-            user.setId(executeQuery("SELECT id FROM users WHERE login="+user.getLogin()).getInt(1));
+            ResultSet resultSet = executeQuery("SELECT id FROM users WHERE login='"+user.getLogin()+"'");
+            resultSet.next();
+            user.setId(resultSet.getInt(1));
             System.out.println(getUsers());
             statement.close();
         }

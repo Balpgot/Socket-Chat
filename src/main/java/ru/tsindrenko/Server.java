@@ -9,16 +9,18 @@ public class Server extends Thread {
 
     private ServerSocket server;
     private List<ClientHandler> clientHandlerList;
-    private List<ChatRoom> chatRooms;
-    private List<User> userList;
 
-    Server(int port, List<ClientHandler> clientHandlerList, List<ChatRoom> chatRooms, List<User> userList) throws IOException {
-       this.server = new ServerSocket(port);
+    Server(int port, List<ClientHandler> clientHandlerList)
+    {
        this.clientHandlerList = clientHandlerList;
-       this.chatRooms = chatRooms;
-       this.userList = userList;
-       start();
-       System.out.println("Сервер запущен в потоке " + currentThread().getName());
+       try {
+           this.server = new ServerSocket(port);
+           start();
+           System.out.println("Сервер запущен в потоке " + currentThread().getName());
+       }
+       catch (IOException ex){
+           ex.printStackTrace();
+       }
     }
 
     @Override
@@ -28,8 +30,7 @@ public class Server extends Thread {
             try {
                 System.out.println("Слушаем...");
                 socket = server.accept();
-                clientHandlerList.add(new ClientHandler(socket, userList));
-                clientHandlerList.get(clientHandlerList.size()-1).setChatRoomId(0);
+                clientHandlerList.add(new ClientHandler(socket));
                 System.out.println("Клиент подключился");
             }
             catch (IOException ex){
@@ -57,13 +58,5 @@ public class Server extends Thread {
 
     public void setServer(ServerSocket server) {
         this.server = server;
-    }
-
-    public List<ChatRoom> getChatRooms() {
-        return chatRooms;
-    }
-
-    public void setChatRooms(List<ChatRoom> chatRooms) {
-        this.chatRooms = chatRooms;
     }
 }

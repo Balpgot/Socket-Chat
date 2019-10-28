@@ -5,15 +5,15 @@ public class TextMessage {
     private String body;
     private int sender_id;
     private int chatroom_id;
-    private int user_id;
+    private String chatroom_nickname;
     private String sender_nickname;
 
-    public TextMessage(String body, int sender_id, int chatroom_id, int user_id, String sender_nickname) {
+    public TextMessage(String body, int sender_id, String sender_nickname, int chatroom_id, String chatroom_nickname) {
         this.body = body;
         this.sender_id = sender_id;
         this.chatroom_id = chatroom_id;
-        this.user_id = user_id;
         this.sender_nickname = sender_nickname;
+        this.chatroom_nickname = chatroom_nickname;
     }
 
     public String getType() {
@@ -44,19 +44,19 @@ public class TextMessage {
         this.chatroom_id = chatroom_id;
     }
 
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
-    }
-
     public String getSender_nickname() {
         return sender_nickname;
     }
 
     public void setSender_nickname(String sender_nickname) {
         this.sender_nickname = sender_nickname;
+    }
+
+    public String getChatroom_nickname() {
+        return chatroom_nickname;
+    }
+
+    public void setChatroom_nickname(String chatroom_nickname) {
+        this.chatroom_nickname = chatroom_nickname;
     }
 }
