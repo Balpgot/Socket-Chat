@@ -59,4 +59,16 @@ public class TextMessage {
     public void setChatroom_nickname(String chatroom_nickname) {
         this.chatroom_nickname = chatroom_nickname;
     }
+
+    @Override
+    public String toString() {
+        return "TextMessage{" +
+                "type='" + type + '\'' +
+                ", body='" + body + '\'' +
+                ", sender_id=" + sender_id +
+                ", chatroom_id=" + chatroom_id +
+                ", chatroom_nickname='" + chatroom_nickname + '\'' +
+                ", sender_nickname='" + sender_nickname + '\'' +
+                '}';
+    }
 }

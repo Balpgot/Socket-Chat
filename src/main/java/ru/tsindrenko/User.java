@@ -12,13 +12,15 @@ public class User {
     private transient String photo;
     private boolean isOnline;
     private transient ClientHandler clientHandler;
-    private transient List<Integer> chatRooms = new ArrayList<>();
-    private transient Queue<String> messageQueue = new LinkedList<>();
+    private transient List<Integer> chatRooms;
+    private transient Queue<String> messageQueue;
 
     User(){
         this.nickname = "Anonimus";
         this.login = "login";
         this.password = "password";
+        this.chatRooms = new ArrayList<>();
+        this.messageQueue = new LinkedList<>();
     }
 
     User(int id, String login, String password) {
@@ -27,6 +29,8 @@ public class User {
         this.login = login;
         this.password = password;
         this.isOnline = false;
+        this.chatRooms = new ArrayList<>();
+        this.messageQueue = new LinkedList<>();
     }
 
     User(String login, String password, String nickname){
@@ -34,6 +38,8 @@ public class User {
         this.login = login;
         this.password = password;
         this.isOnline = false;
+        this.chatRooms = new ArrayList<>();
+        this.messageQueue = new LinkedList<>();
     }
 
     User(int id, String login, String password, String nickname){
@@ -43,6 +49,8 @@ public class User {
         this.password = password;
         this.photo = null;
         this.isOnline = false;
+        this.chatRooms = new ArrayList<>();
+        this.messageQueue = new LinkedList<>();
     }
 
     User(int id, String login, String password, String nickname, String photo){
@@ -52,6 +60,8 @@ public class User {
         this.password = password;
         this.photo = photo;
         this.isOnline = false;
+        this.chatRooms = new ArrayList<>();
+        this.messageQueue = new LinkedList<>();
     }
 
     //геттеры и сеттеры
@@ -131,7 +141,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "id=" + id + ", nickname=" + nickname +
                 ", login='" + login + '\'' +
                 '}';
     }

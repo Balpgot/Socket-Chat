@@ -8,12 +8,16 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class ClientHandler extends Thread {
 
     private final String disconnectClient = "BREAK_CONNECTION";
-    private final String accepted = "SUCCESSFUL_OPERATION";
+    private final String success = "SUCCESSFUL_OPERATION";
+    private final String failure = "FAILED";
     private final String loginInfo = "LOGIN";
     private final String fileInfo = "FILE";
     private final String serviceInfo = "SERVICE";
@@ -21,13 +25,20 @@ public class ClientHandler extends Thread {
     private final String userInfo = "USER";
     private final String messageInfo = "TEXT";
     private final String patchInfo = "PATCH_INFO";
-    private final String requestInfo = "REQUEST_INFO";
+    private final String requestInfo = "REQUEST";
     private final String userNotFound = "USER_NOT_FOUND";
     private final String wrongPassword = "WRONG_PASSWORD";
     private final String loginIsOccupied = "LOGIN_IS_OCCUPIED";
+    private final String nicknameIsOccupied = "NICKNAME_IS_OCCUPIED";
     private final String userIsLogged = "USER_IS_LOGGED";
+    private final String searchChatroomInfo = "SEARCHCHATROOM";
+    private final String searchUserInfo = "SEARCHUSER";
     private static final String avatar = "avatar";
     private static final String fileType = "file";
+    private final String getRequest = "GET";
+    private final String updateRequest = "UPDATE";
+    private final String deleteRequest = "DELETE";
+    private final String createRequest = "CREATE";
 
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
@@ -70,19 +81,19 @@ public class ClientHandler extends Thread {
             ex.printStackTrace();
             endSession();
         }
-
     }
 
     //РАБОТА С ФАЙЛАМИ
 
-    public void sendFile(File file){
+    public void sendFile(File file, FileMessage message){
         try {
             //определяем размер пакета и открываем файл на чтение
             byte[] byteArray = new byte[8192];
             FileInputStream fis = new FileInputStream(file.getPath());
             //отправляем клиенту размер файла
             long size = file.length();
-            FileMessage fileMessage = new FileMessage(size,fileType,file.getName());
+            FileMessage fileMessage = new FileMessage(size,fileType,file.getName(),
+                    message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname());
             sendMessage(gson.toJson(fileMessage));
             System.out.println("Начинаю оправлять");
             BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
@@ -168,11 +179,14 @@ public class ClientHandler extends Thread {
             case userInfo:
                 registration(gson.fromJson(message,User.class));
                 break;
+            case requestInfo:
+                requestHandler(gson.fromJson(message,RequestMessage.class));
+                break;
             default: sendMessage("ERROR_MESSAGE");
         }
     }
 
-    public void sendMessage(String message){
+    public synchronized void sendMessage(String message){
         try {
             out.write(message+"\n");
             out.flush();
@@ -181,6 +195,107 @@ public class ClientHandler extends Thread {
         catch (IOException ex) {
             System.out.println("sendMessage: " + ex.getMessage());
             System.out.println("Сообщение с исключением: " + message);
+        }
+    }
+
+    private void requestHandler(RequestMessage message){
+        switch (message.getStatus()){
+            case getRequest:
+                if(message.getClassType().equals(userInfo)){
+                    HashSet<User> users = Main.databaseConnector.getUsers();
+                    HashMap<String,Integer> searchResult = new HashMap<>();
+                    StringBuffer name = new StringBuffer();
+                    for (User user:users) {
+                        name.append(user.getNickname().toLowerCase());
+                        if(name.toString().startsWith(message.getParameter().toLowerCase())){
+                            searchResult.put(user.getNickname(),user.getId());
+                        }
+                        name.setLength(0);
+                    }
+                    sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest, success,searchResult)));
+                }
+                else if(message.getClassType().equals(chatroomInfo)){
+                    List<ChatRoom> chatRooms = Main.databaseConnector.getChatrooms();
+                    HashMap<String,Integer> searchResult = new HashMap<>();
+                    StringBuffer name = new StringBuffer();
+                    for (ChatRoom chatRoom:chatRooms) {
+                        name.append(chatRoom.getName().toLowerCase());
+                        if(name.toString().startsWith(message.getParameter().toLowerCase())){
+                            searchResult.put(chatRoom.getName(),chatRoom.getId());
+                        }
+                        name.setLength(0);
+                    }
+                    sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, getRequest,success,searchResult)));
+                }
+                break;
+            case updateRequest:
+                if(message.getClassType().equals(userInfo)) {
+                    HashSet<User> users = Main.databaseConnector.getUsers();
+                    boolean status = true;
+                    for (User user : users) {
+                        if (user.getNickname().equals(message.getUser().getNickname())) {
+                            sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, nicknameIsOccupied)));
+                            status = false;
+                        }
+                    }
+                    if(status) {
+                        if(Main.databaseConnector.updateUser(message.getUser())) {
+                            sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, success, message.getUser())));
+                        }
+                        else {
+                            sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, failure)));
+                        }
+                    }
+                }
+                else if(message.getClassType().equals(chatroomInfo)){
+                    List<ChatRoom> chatRooms = Main.databaseConnector.getChatrooms();
+                    boolean status = true;
+                    for (ChatRoom chatRoom:chatRooms) {
+                        if(chatRoom.getName().equals(message.getChatRoom().getName())){
+                            sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, updateRequest, nicknameIsOccupied)));
+                            status = false;
+                        }
+                    }
+                    if(status) {
+                        if(Main.databaseConnector.updateChatroom(message.getChatRoom())) {
+                            sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, updateRequest, success, message.getChatRoom())));
+                        }
+                        else {
+                            sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, updateRequest, failure)));
+                        }
+                    }
+                }
+                break;
+            case deleteRequest:
+                if(message.getClassType().equals(userInfo)){
+                    if(Main.databaseConnector.deleteUser(message.getUser().getId())){
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, deleteRequest, success)));
+                    }
+                    else{
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, deleteRequest, failure)));
+                    }
+                }
+                else if (message.getClassType().equals(chatroomInfo)){
+                    if(Main.databaseConnector.deleteChatroom(message.getChatRoom().getId())){
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, deleteRequest, success)));
+                    }
+                    else{
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, deleteRequest, failure)));
+                    }
+                }
+                break;
+            case createRequest:
+                if(message.getClassType().equals(chatroomInfo)) {
+                    synchronized (Main.databaseConnector){
+                        if(Main.databaseConnector.addChatroom(message.getChatRoom())){
+                            sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, createRequest, success, Main.databaseConnector.getChatroom(message.getChatRoom().getName()))));
+                        }
+                        else{
+                            sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, createRequest, failure)));
+                        }
+                    }
+                }
+                break;
         }
     }
 
@@ -234,7 +349,7 @@ public class ClientHandler extends Thread {
                 this.chatRoomId = 1;
                 user.setClientHandler(this);
                 //сообщаем клиенту об успешном входе, отправляем сервисные сообщения
-                sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
                 sendMessage(gson.toJson(user));
                 sendMessage(gson.toJson(user.getChatRooms()));
                 //приветствуем
@@ -261,11 +376,16 @@ public class ClientHandler extends Thread {
         //Ищем пользователей с полученным логином
         System.out.println("Поиск по пользователям");
         HashSet<User> userList = Main.userList;
-        for (User currentUser : userList)
+        for (User currentUser : userList) {
             if (currentUser.getLogin().equals(user.getLogin())) {
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, loginIsOccupied)));
                 return false;
             }
+            if (currentUser.getNickname().equals(user.getNickname())) {
+                sendMessage(gson.toJson(new ServiceMessage(loginInfo, loginIsOccupied)));
+                return false;
+            }
+        }
 
         //Добавляем запись о новом пользователе
         this.user = new User(user.getLogin(), user.getPassword(), user.getNickname());
@@ -278,10 +398,10 @@ public class ClientHandler extends Thread {
         //добавляем пользователя в БД
         Main.databaseConnector.addUser(user);
         //устанавливаем ID пользователя
-        this.user.setId(Main.databaseConnector.getUser(user.getLogin()).getId());
+        this.user.setId(Main.databaseConnector.getUser(user.getNickname()).getId());
         System.out.println(user.getLogin() + " " + user.getPassword());
         //отсылаем на клиент серверные сообщения
-        sendMessage(gson.toJson(new ServiceMessage(loginInfo, accepted)));
+        sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
         sendMessage(gson.toJson(this.user));
         sendMessage(gson.toJson(user.getChatRooms()));
         //отсылаем приветствие

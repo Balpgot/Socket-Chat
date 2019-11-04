@@ -145,8 +145,8 @@ public class DatabaseConnector {
         return user;
     }
 
-    public User getUser(String login){
-        ResultSet userDB = executeQuery("SELECT * FROM users WHERE login='"+login+"'");
+    public User getUser(String nickname){
+        ResultSet userDB = executeQuery("SELECT * FROM users WHERE nickname='"+nickname+"'");
         User user = null;
         try {
             if(userDB.next()){
@@ -267,13 +267,14 @@ public class DatabaseConnector {
             user.setId(resultSet.getInt(1));
             System.out.println(getUsers());
             statement.close();
+            Main.userList.add(user);
         }
         catch (SQLException ex){
             ex.printStackTrace();
         }
     }
 
-    public void addChatroom(ChatRoom chatRoom){
+    public boolean addChatroom(ChatRoom chatRoom){
         Statement statement;
         try {
             statement = connection.createStatement();
@@ -285,9 +286,17 @@ public class DatabaseConnector {
             chatRoom.setId(resultSet.getInt(1));
             statement.close();
             resultSet.close();
+            for (Integer participant_id:chatRoom.getParticipants_id()) {
+                addUserToChatroom(chatRoom.getId(),participant_id,false);
+            }
+            System.out.println(chatRoom);
+            Main.chatRoomMap.put(chatRoom.getId(),chatRoom);
+            System.out.println(Main.chatRoomMap.values());
+            return true;
         }
         catch (SQLException ex){
             ex.printStackTrace();
+            return false;
         }
     }
 
@@ -302,7 +311,8 @@ public class DatabaseConnector {
             }
             else
                 query+="0'";
-            query+=",'0','1'";
+            query+=",'0','1')";
+            System.out.println(query);
             statement.executeUpdate(query);
             statement.close();
         }
@@ -355,6 +365,64 @@ public class DatabaseConnector {
         }
         catch (SQLException ex){
             ex.printStackTrace();
+        }
+    }
+
+    public boolean updateUser(User user){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE users SET login='" + user.getLogin() +
+                "', password='" + user.getPassword() + "',nickname='" + user.getNickname() +
+                "', avatar='" + user.getPhoto() + "'");
+            statement.close();
+            return true;
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateChatroom(ChatRoom chatRoom){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE chatrooms SET name='" + chatRoom.getName() +
+                    "', administrator='" + chatRoom.getAdmin_id() + "'");
+            return true;
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteUser(int id){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE users SET is_deleted='1' WHERE id='"+id+"'");
+            statement.close();
+            return true;
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteChatroom(int id){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE chatrooms SET is_deleted='1' WHERE id='"+id+"'");
+            statement.close();
+            return true;
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+            return false;
         }
     }
 

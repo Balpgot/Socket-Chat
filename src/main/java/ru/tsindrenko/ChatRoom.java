@@ -13,8 +13,8 @@ public class ChatRoom {
     private String name;
     private Integer admin_id;
     private boolean is_dialog;
-    private transient HashSet<Integer> participants_id;
-    private transient List<Integer> blacklist;
+    private HashSet<Integer> participants_id;
+    private List<Integer> blacklist;
     private transient Gson gson = new Gson();
 
     ChatRoom(int id, String name, HashSet<Integer> participants_id){
@@ -23,6 +23,13 @@ public class ChatRoom {
         this.name = name;
         this.admin_id = null;
         this.blacklist = new ArrayList<>();
+    }
+
+    public ChatRoom(String name, Integer admin_id, boolean is_dialog, HashSet<Integer> participants_id) {
+        this.name = name;
+        this.admin_id = admin_id;
+        this.is_dialog = is_dialog;
+        this.participants_id = participants_id;
     }
 
     ChatRoom(int id, String name){
@@ -54,8 +61,7 @@ public class ChatRoom {
         return participants_id;
     }
 
-    public void sendMessageToAll(TextMessage message){
-        System.out.println(participants_id);
+    public synchronized void sendMessageToAll(TextMessage message){
         User user;
         ClientHandler clientHandler;
         //объявляем итератор по списку пользователей
@@ -72,8 +78,10 @@ public class ChatRoom {
                 if(user.isOnline()){
                     clientHandler.sendMessage(gson.toJson(message,TextMessage.class));
                 }
-                else
+                else{
                     user.getMessageQueue().add(gson.toJson(message));
+                }
+
             }
         }
     }

@@ -27,7 +27,6 @@ public class Main {
         while (userIterator.hasNext()){
             clientHandlerMap.put(userIterator.next(), null);
         }
-        System.out.println(clientHandlerMap.keySet());
         Gson gson = new Gson();
         Server server = new Server(port, clientHandlerList);
     }
