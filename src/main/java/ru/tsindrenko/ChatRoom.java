@@ -70,16 +70,21 @@ public class ChatRoom {
         * если он есть в списке участников, запрашиваем его CH
         * отправляем сообщение
         */
+        gson = new Gson();
         while(userIterator.hasNext()){
             user = userIterator.next();
             if(participants_id.contains(user.getId())){
                 System.out.println("USER: "+user );
                 clientHandler = Main.clientHandlerMap.get(user);
                 if(user.isOnline()){
-                    clientHandler.sendMessage(gson.toJson(message,TextMessage.class));
+                    //clientHandler.sendMessage(gson.toJson(message,TextMessage.class));
+                    System.out.println(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname()));
+                    clientHandler.sendMessage(gson.toJson(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname())));
                 }
                 else{
-                    user.getMessageQueue().add(gson.toJson(message));
+                    System.out.println(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname()));
+                    user.getMessageQueue().add(gson.toJson(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname())));
+                    //user.getMessageQueue().add(gson.toJson(message));
                 }
 
             }

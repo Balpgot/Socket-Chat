@@ -1,5 +1,7 @@
 package ru.tsindrenko;
 
+import com.google.gson.Gson;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -59,7 +61,6 @@ public class DatabaseConnector {
                         users.getString(5));
                 user.setChatRooms(getUserChatroomsId(user.getId()));
                 userList.add(user);
-                System.out.println("GU= "  + user);
             }
             users.close();
         }
@@ -265,7 +266,6 @@ public class DatabaseConnector {
             ResultSet resultSet = executeQuery("SELECT id FROM users WHERE login='"+user.getLogin()+"'");
             resultSet.next();
             user.setId(resultSet.getInt(1));
-            System.out.println(getUsers());
             statement.close();
             Main.userList.add(user);
         }
@@ -289,9 +289,7 @@ public class DatabaseConnector {
             for (Integer participant_id:chatRoom.getParticipants_id()) {
                 addUserToChatroom(chatRoom.getId(),participant_id,false);
             }
-            System.out.println(chatRoom);
-            Main.chatRoomMap.put(chatRoom.getId(),chatRoom);
-            System.out.println(Main.chatRoomMap.values());
+            Main.chatRoomMap.get(chatRoom.getId()).sendMessageToAll(new TextMessage(getUser(chatRoom.getAdmin_id()).getNickname()+" добавил вас в " + chatRoom.getName(),0, "SERVER", chatRoom.getId(), chatRoom.getName()));
             return true;
         }
         catch (SQLException ex){

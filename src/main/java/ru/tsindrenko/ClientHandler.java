@@ -288,6 +288,8 @@ public class ClientHandler extends Thread {
                 if(message.getClassType().equals(chatroomInfo)) {
                     synchronized (Main.databaseConnector){
                         if(Main.databaseConnector.addChatroom(message.getChatRoom())){
+                            ChatRoom chatRoom = Main.databaseConnector.getChatroom(message.getChatRoom().getName());
+                            Main.chatRoomMap.put(chatRoom.getId(),chatRoom);
                             sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, createRequest, success, Main.databaseConnector.getChatroom(message.getChatRoom().getName()))));
                         }
                         else{
@@ -296,15 +298,6 @@ public class ClientHandler extends Thread {
                     }
                 }
                 break;
-        }
-    }
-
-    //отправляет сообщение заданному пользователю
-    public synchronized void sendMessageToUser(int userId, TextMessage message){
-        for (User user:Main.userList) {
-            if(user.getId()==userId){
-                Main.clientHandlerMap.get(user).sendMessage(gson.toJson(message));
-            }
         }
     }
 
@@ -351,7 +344,7 @@ public class ClientHandler extends Thread {
                 //сообщаем клиенту об успешном входе, отправляем сервисные сообщения
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
                 sendMessage(gson.toJson(user));
-                sendMessage(gson.toJson(user.getChatRooms()));
+                //sendMessage(gson.toJson(user.getChatRooms()));
                 //приветствуем
                 sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, "SERVER", 1, "Общий чат")));
                 //сообщаем БД о статусе пользователя
@@ -386,7 +379,6 @@ public class ClientHandler extends Thread {
                 return false;
             }
         }
-
         //Добавляем запись о новом пользователе
         this.user = new User(user.getLogin(), user.getPassword(), user.getNickname());
         this.user.setOnline(true);
@@ -403,7 +395,7 @@ public class ClientHandler extends Thread {
         //отсылаем на клиент серверные сообщения
         sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
         sendMessage(gson.toJson(this.user));
-        sendMessage(gson.toJson(user.getChatRooms()));
+        //sendMessage(gson.toJson(user.getChatRooms()));
         //отсылаем приветствие
         sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0,"SERVER", 1, "Общий чат")));
         //обозначаем CH для польователя
