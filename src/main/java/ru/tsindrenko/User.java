@@ -37,7 +37,7 @@ public class User {
         this.nickname = nickname;
         this.login = login;
         this.password = password;
-        this.isOnline = false;
+        //this.isOnline = false;
         this.chatRooms = new ArrayList<>();
         this.messageQueue = new LinkedList<>();
     }
@@ -59,7 +59,7 @@ public class User {
         this.login = login;
         this.password = password;
         this.photo = photo;
-        this.isOnline = false;
+        //this.isOnline = false;
         this.chatRooms = new ArrayList<>();
         this.messageQueue = new LinkedList<>();
     }
@@ -141,8 +141,10 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id + ", nickname=" + nickname +
+                "id=" + id +
+                ", nickname='" + nickname + '\'' +
                 ", login='" + login + '\'' +
+                ", isOnline=" + isOnline +
                 '}';
     }
 

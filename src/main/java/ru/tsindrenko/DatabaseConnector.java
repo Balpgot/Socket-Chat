@@ -267,7 +267,9 @@ public class DatabaseConnector {
             resultSet.next();
             user.setId(resultSet.getInt(1));
             statement.close();
+            System.out.println("DB: " + user);
             Main.userList.add(user);
+
         }
         catch (SQLException ex){
             ex.printStackTrace();
@@ -286,10 +288,10 @@ public class DatabaseConnector {
             chatRoom.setId(resultSet.getInt(1));
             statement.close();
             resultSet.close();
+            Main.chatRoomMap.put(chatRoom.getId(),chatRoom);
             for (Integer participant_id:chatRoom.getParticipants_id()) {
                 addUserToChatroom(chatRoom.getId(),participant_id,false);
             }
-            Main.chatRoomMap.get(chatRoom.getId()).sendMessageToAll(new TextMessage(getUser(chatRoom.getAdmin_id()).getNickname()+" добавил вас в " + chatRoom.getName(),0, "SERVER", chatRoom.getId(), chatRoom.getName()));
             return true;
         }
         catch (SQLException ex){
@@ -311,6 +313,7 @@ public class DatabaseConnector {
                 query+="0'";
             query+=",'0','1')";
             System.out.println(query);
+            Main.chatRoomMap.get(chatroomId).getParticipants().add(userId);
             statement.executeUpdate(query);
             statement.close();
         }

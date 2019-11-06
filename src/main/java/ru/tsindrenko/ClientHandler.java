@@ -288,9 +288,9 @@ public class ClientHandler extends Thread {
                 if(message.getClassType().equals(chatroomInfo)) {
                     synchronized (Main.databaseConnector){
                         if(Main.databaseConnector.addChatroom(message.getChatRoom())){
-                            ChatRoom chatRoom = Main.databaseConnector.getChatroom(message.getChatRoom().getName());
-                            Main.chatRoomMap.put(chatRoom.getId(),chatRoom);
                             sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, createRequest, success, Main.databaseConnector.getChatroom(message.getChatRoom().getName()))));
+                            ChatRoom chatRoom = Main.databaseConnector.getChatroom(message.getChatRoom().getName());
+                            Main.chatRoomMap.get(chatRoom.getId()).sendMessageToAll(new TextMessage(Main.databaseConnector.getUser(chatRoom.getAdmin_id()).getNickname()+" добавил вас в " + chatRoom.getName(),0, "SERVER", chatRoom.getId(), chatRoom.getName()));
                         }
                         else{
                             sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, createRequest, failure)));
@@ -382,15 +382,16 @@ public class ClientHandler extends Thread {
         //Добавляем запись о новом пользователе
         this.user = new User(user.getLogin(), user.getPassword(), user.getNickname());
         this.user.setOnline(true);
-        //добавляем пользователя в общий список
-        Main.userList.add(user);
-        //добавляем пользователя в общий чат
-        user.getChatRooms().add(1);
-        this.chatRoomId = 1;
         //добавляем пользователя в БД
-        Main.databaseConnector.addUser(user);
+        Main.databaseConnector.addUser(this.user);
         //устанавливаем ID пользователя
-        this.user.setId(Main.databaseConnector.getUser(user.getNickname()).getId());
+        int userId = Main.databaseConnector.getUser(user.getNickname()).getId();
+        Main.databaseConnector.makeUserOnline(userId,true);
+        this.user.setId(userId);
+        //добавляем пользователя в общий чат
+        this.user.getChatRooms().add(1);
+        this.chatRoomId = 1;
+        Main.databaseConnector.addUserToChatroom(1,userId,false);
         System.out.println(user.getLogin() + " " + user.getPassword());
         //отсылаем на клиент серверные сообщения
         sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
@@ -400,7 +401,7 @@ public class ClientHandler extends Thread {
         sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0,"SERVER", 1, "Общий чат")));
         //обозначаем CH для польователя
         user.setClientHandler(this);
-        Main.clientHandlerMap.put(user,this);
+        Main.clientHandlerMap.put(this.user,this);
         return true;
     }
 

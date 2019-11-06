@@ -64,6 +64,7 @@ public class ChatRoom {
     public synchronized void sendMessageToAll(TextMessage message){
         User user;
         ClientHandler clientHandler;
+        System.out.println(Main.userList);
         //объявляем итератор по списку пользователей
         Iterator<User> userIterator=Main.userList.iterator();
         /*проходим по каждому пользователю
@@ -76,14 +77,15 @@ public class ChatRoom {
             if(participants_id.contains(user.getId())){
                 System.out.println("USER: "+user );
                 clientHandler = Main.clientHandlerMap.get(user);
+                System.out.println(user.isOnline());
                 if(user.isOnline()){
                     //clientHandler.sendMessage(gson.toJson(message,TextMessage.class));
                     System.out.println(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname()));
-                    clientHandler.sendMessage(gson.toJson(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname())));
+                    clientHandler.sendMessage(gson.toJson(message,TextMessage.class));
                 }
                 else{
-                    System.out.println(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname()));
-                    user.getMessageQueue().add(gson.toJson(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname())));
+                    //System.out.println(new TextMessage(message.getBody(),message.getSender_id(), message.getSender_nickname(), message.getChatroom_id(), message.getChatroom_nickname()));
+                    user.getMessageQueue().add(gson.toJson(message,TextMessage.class));
                     //user.getMessageQueue().add(gson.toJson(message));
                 }
 
