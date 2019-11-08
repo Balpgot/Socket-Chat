@@ -418,8 +418,8 @@ public class DatabaseConnector {
         Statement statement;
         try {
             statement = connection.createStatement();
-            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=1 WHERE chatroom_id='"+
-                    chatroom_id+"',user_id='"+user_id+"',is_blacklisted='0'");
+            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=1 WHERE chatroom_id="+
+                    chatroom_id+" AND user_id="+user_id);
             statement.close();
         }
         catch (SQLException ex){
@@ -451,10 +451,11 @@ public class DatabaseConnector {
     public boolean updateUser(User user){
         Statement statement;
         try {
+            System.out.println(user);
             statement = connection.createStatement();
             statement.executeUpdate("UPDATE users SET login='" + user.getLogin() +
                 "', password='" + user.getPassword() + "',nickname='" + user.getNickname() +
-                "', avatar='" + user.getPhoto() + "'");
+                "', avatar='" + user.getPhoto() + "' WHERE id="+user.getId());
             statement.close();
             return true;
         }

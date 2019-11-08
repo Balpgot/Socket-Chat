@@ -275,14 +275,17 @@ public class ClientHandler extends Thread {
                     HashSet<User> users = Main.databaseConnector.getUsers();
                     boolean status = true;
                     for (User user : users) {
-                        if (user.getNickname().equals(message.getUser().getNickname())) {
+                        if (user.getNickname().equals(message.getUser().getNickname()) && !user.getNickname().equals(this.user.getNickname())) {
                             sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, nicknameIsOccupied)));
                             status = false;
                         }
                     }
                     if(status) {
                         if(Main.databaseConnector.updateUser(message.getUser())) {
+                            this.user.setNickname(message.getUser().getNickname());
+                            this.user.setPassword(message.getUser().getPassword());
                             sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, success, message.getUser())));
+
                         }
                         else {
                             sendMessage(gson.toJson(new ResponseMessage(userInfo, updateRequest, failure)));
@@ -322,6 +325,9 @@ public class ClientHandler extends Thread {
                             if(!oldModerators.contains(id)){
                                 resultModerators.add(id);
                             }
+                            if(oldParticipants.contains(id)){
+                                Main.databaseConnector.makeUserModerator(id,currentChatroomId);
+                            }
                         }
                         System.out.println(resultParticipants);
                         System.out.println(resultBlacklist);
@@ -336,6 +342,8 @@ public class ClientHandler extends Thread {
                         for (Integer id:resultBlacklist) {
                             Main.databaseConnector.banUser(id,currentChatroomId);
                         }
+                        Main.chatRoomMap.put(currentChatroomId,Main.databaseConnector.getChatroom(currentChatroomId));
+                        sendMessageToChatroom(new TextMessage("Присоединились новые собеседники!",0,"SERVER",currentChatroomId,message.getChatRoom().getName()));
                         sendMessage(gson.toJson(new ResponseMessage(chatroomInfo,updateRequest,success)));
                     }
                     else{
@@ -437,9 +445,6 @@ public class ClientHandler extends Thread {
                 //сообщаем клиенту об успешном входе, отправляем сервисные сообщения
                 sendMessage(gson.toJson(new ServiceMessage(loginInfo, success)));
                 sendMessage(gson.toJson(user));
-                //sendMessage(gson.toJson(user.getChatRooms()));
-                //приветствуем
-                sendMessage(gson.toJson(new TextMessage("Добро пожаловать в чат",0, "SERVER", 1, "Общий чат")));
                 //сообщаем БД о статусе пользователя
                 Main.databaseConnector.makeUserOnline(user.getId(),true);
                 //добавляем соответствие CH и пользователя
