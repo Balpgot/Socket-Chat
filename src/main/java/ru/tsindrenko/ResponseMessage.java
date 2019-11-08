@@ -41,6 +41,15 @@ public class ResponseMessage {
         this.parameter = parameter;
     }
 
+    public ResponseMessage(String classType, String action, String status, HashMap<String, Integer> body, User user, String parameter) {
+        this.classType = classType;
+        this.action = action;
+        this.status = status;
+        this.body = body;
+        this.user = user;
+        this.parameter = parameter;
+    }
+
     public ResponseMessage(String classType, String action, String status) {
         this.classType = classType;
         this.action = action;

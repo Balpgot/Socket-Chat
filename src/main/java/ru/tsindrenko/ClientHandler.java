@@ -224,6 +224,7 @@ public class ClientHandler extends Thread {
                     if(message.getChatRoom()!=null){
                         if(message.getChatRoom().getId()<1){
                             message.getChatRoom().setId(Main.databaseConnector.getChatroom(message.getChatRoom().getName()).getId());
+
                         }
                         HashMap<Integer,String> users = Main.databaseConnector.getUsersMap();
                         ChatRoom chatRoom = Main.databaseConnector.getChatroom(message.getChatRoom().getId());
@@ -241,7 +242,8 @@ public class ClientHandler extends Thread {
                         for (Integer id:moderators) {
                             searchResult.put(users.get(id),id);
                         }
-                        sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest,success,searchResult,moderatorInfo)));
+                        User admin = Main.databaseConnector.getUser(chatRoom.getAdmin_id());
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest,success,searchResult,admin,moderatorInfo)));
                         searchResult.clear();
                     }
                     else if(message.getParameter().equals(adminInfo)){
@@ -288,7 +290,58 @@ public class ClientHandler extends Thread {
                     }
                 }
                 else if(message.getClassType().equals(chatroomInfo)){
-                    List<ChatRoom> chatRooms = Main.databaseConnector.getChatrooms();
+                    if(message.getChatRoom().getId()<1){
+                        message.getChatRoom().setId(Main.databaseConnector.getChatroom(message.getChatRoom().getName()).getId());
+                    }
+                    int currentChatroomId = message.getChatRoom().getId();
+                    HashSet<Integer> oldModerators = Main.databaseConnector.getChatroomModeratorId(currentChatroomId);
+                    if(oldModerators.contains(this.user.getId())||message.getChatRoom().getAdmin_id()==this.user.getId()){
+                        HashSet<Integer> oldParticipants = Main.databaseConnector.getChatroomParticipantsId(currentChatroomId);
+                        HashSet<Integer> oldBlacklist = Main.databaseConnector.getChatroomBlacklistId(currentChatroomId);
+                        HashSet<Integer> newParticipants = message.getChatRoom().getParticipants_id();
+                        HashSet<Integer> newBlacklist = message.getChatRoom().getBlacklist();
+                        HashSet<Integer> newModerators = message.getUserIdSet();
+                        HashSet<Integer> resultParticipants = new HashSet<>();
+                        HashSet<Integer> resultBlacklist = new HashSet<>();
+                        HashSet<Integer> resultModerators = new HashSet<>();
+                        for (Integer id:newParticipants) {
+                            if(oldBlacklist.contains(id)){
+                                Main.databaseConnector.unbanUser(id,currentChatroomId);
+                            }
+                            else if(!oldParticipants.contains(id)){
+                                resultParticipants.add(id);
+                            }
+
+                        }
+                        for (Integer id:newBlacklist) {
+                            if(!oldBlacklist.contains(id)){
+                                resultBlacklist.add(id);
+                            }
+                        }
+                        for (Integer id:newModerators) {
+                            if(!oldModerators.contains(id)){
+                                resultModerators.add(id);
+                            }
+                        }
+                        System.out.println(resultParticipants);
+                        System.out.println(resultBlacklist);
+                        System.out.println(resultModerators);
+                        for (Integer id:resultParticipants) {
+                            if(resultModerators.contains(id)){
+                                Main.databaseConnector.addUserToChatroom(currentChatroomId,id,true);
+                            }
+                            else
+                                Main.databaseConnector.addUserToChatroom(currentChatroomId,id,false);
+                        }
+                        for (Integer id:resultBlacklist) {
+                            Main.databaseConnector.banUser(id,currentChatroomId);
+                        }
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo,updateRequest,success)));
+                    }
+                    else{
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo,updateRequest,failure)));
+                    }
+                    /*List<ChatRoom> chatRooms = Main.databaseConnector.getChatrooms();
                     boolean status = true;
                     for (ChatRoom chatRoom:chatRooms) {
                         if(chatRoom.getName().equals(message.getChatRoom().getName())){
@@ -303,7 +356,7 @@ public class ClientHandler extends Thread {
                         else {
                             sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, updateRequest, failure)));
                         }
-                    }
+                    }*/
                 }
                 break;
             case deleteRequest:

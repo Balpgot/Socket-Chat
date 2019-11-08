@@ -187,7 +187,6 @@ public class DatabaseConnector {
         return user;
     }
 
-
     public ChatRoom getChatroom(int id){
         ResultSet chatroomDB = executeQuery("SELECT * FROM chatrooms WHERE id='"+id+"'");
         ChatRoom chatRoom = null;
@@ -393,8 +392,21 @@ public class DatabaseConnector {
         Statement statement;
         try {
             statement = connection.createStatement();
-            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=0,is_blacklisted=1,is_participant=0 WHERE chatroom_id='"+
-                    chatroom_id+"',user_id='"+user_id+"'");
+            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=0,is_blacklisted=1,is_participant=0 WHERE chatroom_id="+
+                    chatroom_id+" AND user_id="+user_id+"");
+            statement.close();
+        }
+        catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void unbanUser(int user_id, int chatroom_id){
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("UPDATE chatroom_users SET is_moderator=0,is_blacklisted=0,is_participant=1 WHERE chatroom_id="+
+                    chatroom_id+" AND user_id="+user_id+"");
             statement.close();
         }
         catch (SQLException ex){
@@ -452,19 +464,6 @@ public class DatabaseConnector {
         }
     }
 
-    public boolean updateChatroom(ChatRoom chatRoom){
-        Statement statement;
-        try {
-            statement = connection.createStatement();
-            statement.executeUpdate("UPDATE chatrooms SET name='" + chatRoom.getName() +
-                    "', administrator='" + chatRoom.getAdmin_id() + "'");
-            return true;
-        }
-        catch (SQLException ex){
-            ex.printStackTrace();
-            return false;
-        }
-    }
 
     public boolean deleteUser(int id){
         Statement statement;

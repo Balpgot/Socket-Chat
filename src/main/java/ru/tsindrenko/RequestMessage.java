@@ -1,5 +1,7 @@
 package ru.tsindrenko;
 
+import java.util.HashSet;
+
 public class RequestMessage {
     private final String type = "REQUEST";
     private String classType;
@@ -7,6 +9,7 @@ public class RequestMessage {
     private User user;
     private ChatRoom chatRoom;
     private String parameter;
+    private HashSet<Integer> userIdSet = new HashSet<>();
 
     public RequestMessage(String classType, String status, String parameter) {
         this.classType = classType;
@@ -72,5 +75,13 @@ public class RequestMessage {
 
     public void setChatRoom(ChatRoom chatRoom) {
         this.chatRoom = chatRoom;
+    }
+
+    public HashSet<Integer> getUserIdSet() {
+        return userIdSet;
+    }
+
+    public void setUserIdSet(HashSet<Integer> userIdSet) {
+        this.userIdSet = userIdSet;
     }
 }
