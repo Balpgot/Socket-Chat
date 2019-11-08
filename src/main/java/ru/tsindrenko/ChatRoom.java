@@ -14,7 +14,7 @@ public class ChatRoom {
     private Integer admin_id;
     private boolean is_dialog;
     private HashSet<Integer> participants_id;
-    private List<Integer> blacklist;
+    private HashSet<Integer> blacklist;
     private transient Gson gson = new Gson();
 
     ChatRoom(int id, String name, HashSet<Integer> participants_id){
@@ -22,7 +22,7 @@ public class ChatRoom {
         this.id = id;
         this.name = name;
         this.admin_id = null;
-        this.blacklist = new ArrayList<>();
+        this.blacklist = new HashSet<>();
     }
 
     public ChatRoom(String name, Integer admin_id, boolean is_dialog, HashSet<Integer> participants_id) {
@@ -37,7 +37,7 @@ public class ChatRoom {
         this.name = name;
         this.admin_id = null;
         this.participants_id = new HashSet<>();
-        this.blacklist = new ArrayList<>();
+        this.blacklist = new HashSet<>();
     }
 
     ChatRoom(int id, String name, Integer admin_id){
@@ -45,7 +45,7 @@ public class ChatRoom {
         this.name = name;
         this.admin_id = admin_id;
         this.participants_id = new HashSet<>();
-        this.blacklist = new ArrayList<>();
+        this.blacklist = new HashSet<>();
         participants_id.add(admin_id);
     }
 
@@ -53,7 +53,7 @@ public class ChatRoom {
         this.name = name;
         this.admin_id = admin_id;
         this.participants_id = new HashSet<>();
-        this.blacklist = new ArrayList<>();
+        this.blacklist = new HashSet<>();
         participants_id.add(admin_id);
     }
 
@@ -136,11 +136,11 @@ public class ChatRoom {
         this.participants_id = participants_id;
     }
 
-    public List<Integer> getBlacklist() {
+    public HashSet<Integer> getBlacklist() {
         return blacklist;
     }
 
-    public void setBlacklist(List<Integer> blacklist) {
+    public void setBlacklist(HashSet<Integer> blacklist) {
         this.blacklist = blacklist;
     }
 

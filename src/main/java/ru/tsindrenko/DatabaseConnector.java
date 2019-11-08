@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -46,6 +47,21 @@ public class DatabaseConnector {
 
 
     //методы для получения данных
+
+    public HashMap<Integer,String> getUsersMap(){
+        ResultSet users = executeQuery("SELECT id,nickname FROM users WHERE is_deleted=0");
+        HashMap<Integer,String> userList = new HashMap<>();
+        try{
+            while (users.next()) {
+                userList.put(users.getInt(1),users.getString(2));
+            }
+            users.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return userList;
+    }
 
     public HashSet<User> getUsers(){
         ResultSet users = executeQuery("SELECT * FROM users WHERE is_deleted=0");
@@ -181,6 +197,7 @@ public class DatabaseConnector {
                         chatroomDB.getString(2),
                         chatroomDB.getInt(3));
                 chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
+                chatRoom.getBlacklist().addAll(getChatroomBlacklistId(chatRoom.getId()));
                 chatRoom.setAdmin_id(chatroomDB.getInt(3));
                 chatRoom.setIsDialog(chatroomDB.getBoolean(5));
                 chatroomDB.close();
@@ -205,6 +222,7 @@ public class DatabaseConnector {
                         chatroomDB.getString(2),
                         chatroomDB.getInt(3));
                 chatRoom.getParticipants().addAll(getChatroomParticipantsId(chatRoom.getId()));
+                chatRoom.getBlacklist().addAll(getChatroomBlacklistId(chatRoom.getId()));
                 chatRoom.setAdmin_id(chatroomDB.getInt(3));
                 chatRoom.setIsDialog(chatroomDB.getBoolean(5));
                 chatroomDB.close();
@@ -254,6 +272,55 @@ public class DatabaseConnector {
             ex.printStackTrace();
         }
         return userList;
+    }
+
+    public HashSet<Integer> getChatroomBlacklistId(int id){
+        ResultSet resultSet = executeQuery("SELECT DISTINCT chatroom_users.user_id FROM chatroom_users,users WHERE " +
+                "chatroom_users.is_blacklisted = 1 AND chatroom_users.chatroom_id =" + id +" AND chatroom_users.user_id IN (SELECT users.id FROM users WHERE users.is_deleted = 0)");
+        HashSet<Integer> userList = new HashSet<>();
+        try{
+            while (resultSet.next()) {
+                userList.add(resultSet.getInt(1));
+            }
+            resultSet.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return userList;
+    }
+
+    public HashSet<Integer> getChatroomModeratorId(int id){
+        ResultSet resultSet = executeQuery("SELECT DISTINCT chatroom_users.user_id FROM chatroom_users,users WHERE " +
+                "chatroom_users.is_moderator = 1 AND chatroom_users.chatroom_id =" + id +" AND chatroom_users.user_id IN (SELECT users.id FROM users WHERE users.is_deleted = 0)");
+        HashSet<Integer> userList = new HashSet<>();
+        try{
+            while (resultSet.next()) {
+                userList.add(resultSet.getInt(1));
+            }
+            resultSet.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return userList;
+    }
+
+    public HashMap<String,Integer> getChatroomsModeratedByUser(int id){
+        ResultSet resultSet = executeQuery("SELECT DISTINCT chatrooms.name, chatrooms.id FROM chatroom_users,chatrooms WHERE " +
+                "chatroom_users.is_moderator = 1 AND chatroom_users.user_id =" + id +" AND chatrooms.id=chatroom_users.chatroom_id");
+        HashMap<String,Integer> chatroomsList = new HashMap<>();
+        try{
+            while (resultSet.next()) {
+                chatroomsList.put(resultSet.getString(1),resultSet.getInt(2));
+            }
+            resultSet.close();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("MODERATED: " + chatroomsList);
+        return chatroomsList;
     }
 
     public void addUser(User user){

@@ -23,6 +23,7 @@ public class ClientHandler extends Thread {
     private final String serviceInfo = "SERVICE";
     private final String chatroomInfo = "CHATROOM";
     private final String userInfo = "USER";
+    private final String adminInfo = "ADMIN";
     private final String messageInfo = "TEXT";
     private final String patchInfo = "PATCH_INFO";
     private final String requestInfo = "REQUEST";
@@ -39,6 +40,9 @@ public class ClientHandler extends Thread {
     private final String updateRequest = "UPDATE";
     private final String deleteRequest = "DELETE";
     private final String createRequest = "CREATE";
+    private final String blacklistInfo = "BLACKLIST";
+    private final String participantsInfo = "PARTICIPANTS";
+    private final String moderatorInfo = "MODERATOR";
 
     private Socket clientSocket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
@@ -217,15 +221,51 @@ public class ClientHandler extends Thread {
                 else if(message.getClassType().equals(chatroomInfo)){
                     List<ChatRoom> chatRooms = Main.databaseConnector.getChatrooms();
                     HashMap<String,Integer> searchResult = new HashMap<>();
-                    StringBuffer name = new StringBuffer();
-                    for (ChatRoom chatRoom:chatRooms) {
-                        name.append(chatRoom.getName().toLowerCase());
-                        if(name.toString().startsWith(message.getParameter().toLowerCase())){
-                            searchResult.put(chatRoom.getName(),chatRoom.getId());
+                    if(message.getChatRoom()!=null){
+                        if(message.getChatRoom().getId()<1){
+                            message.getChatRoom().setId(Main.databaseConnector.getChatroom(message.getChatRoom().getName()).getId());
                         }
-                        name.setLength(0);
+                        HashMap<Integer,String> users = Main.databaseConnector.getUsersMap();
+                        ChatRoom chatRoom = Main.databaseConnector.getChatroom(message.getChatRoom().getId());
+                        for (Integer id:chatRoom.getParticipants_id()) {
+                            searchResult.put(users.get(id),id);
+                        }
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest,success,searchResult,participantsInfo)));
+                        searchResult.clear();
+                        for (Integer id:chatRoom.getBlacklist()) {
+                            searchResult.put(users.get(id),id);
+                        }
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest,success,searchResult,blacklistInfo)));
+                        searchResult.clear();
+                        HashSet<Integer> moderators = Main.databaseConnector.getChatroomModeratorId(message.getChatRoom().getId());
+                        for (Integer id:moderators) {
+                            searchResult.put(users.get(id),id);
+                        }
+                        sendMessage(gson.toJson(new ResponseMessage(userInfo, getRequest,success,searchResult,moderatorInfo)));
+                        searchResult.clear();
                     }
-                    sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, getRequest,success,searchResult)));
+                    else if(message.getParameter().equals(adminInfo)){
+                        for (ChatRoom chatRoom:chatRooms){
+                            if(chatRoom.getAdmin_id() == this.user.getId()){
+                                searchResult.put(chatRoom.getName(),chatRoom.getId());
+                            }
+                        }
+                        HashMap<String,Integer> moderatedChatrooms = Main.databaseConnector.getChatroomsModeratedByUser(this.user.getId());
+                        searchResult.putAll(moderatedChatrooms);
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, getRequest,success,searchResult)));
+                    }
+                    else {
+                        StringBuffer name = new StringBuffer();
+                        for (ChatRoom chatRoom:chatRooms) {
+                            name.append(chatRoom.getName().toLowerCase());
+                            if(name.toString().startsWith(message.getParameter().toLowerCase())){
+                                searchResult.put(chatRoom.getName(),chatRoom.getId());
+                            }
+                            name.setLength(0);
+                        }
+                        sendMessage(gson.toJson(new ResponseMessage(chatroomInfo, getRequest,success,searchResult)));
+                    }
+
                 }
                 break;
             case updateRequest:

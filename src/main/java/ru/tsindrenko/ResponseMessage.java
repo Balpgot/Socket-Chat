@@ -10,6 +10,7 @@ public class ResponseMessage {
     private HashMap<String,Integer> body;
     private User user;
     private ChatRoom chatRoom;
+    private String parameter;
 
     public ResponseMessage(String classType, String action, String status, HashMap<String,Integer> body) {
         this.classType = classType;
@@ -30,6 +31,14 @@ public class ResponseMessage {
         this.action = action;
         this.status = status;
         this.chatRoom = chatRoom;
+    }
+
+    public ResponseMessage(String classType, String action, String status, HashMap<String, Integer> body, String parameter) {
+        this.classType = classType;
+        this.action = action;
+        this.status = status;
+        this.body = body;
+        this.parameter = parameter;
     }
 
     public ResponseMessage(String classType, String action, String status) {
